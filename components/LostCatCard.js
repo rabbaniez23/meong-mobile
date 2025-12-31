@@ -1,38 +1,36 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function LostCatCard({ name, reward, location, date, image, onContact }) {
+export default function LostCatCard({ name, reward, location, date, image, onFoundPress }) {
   return (
     <View style={styles.card}>
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: image }} style={styles.image} />
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>DICARI</Text>
-        </View>
-      </View>
+      <Image source={{ uri: image }} style={styles.image} />
       
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>DICARI</Text>
+      </View>
+
       <View style={styles.content}>
-        <View style={styles.header}>
+        <View style={styles.headerRow}>
           <Text style={styles.name}>{name}</Text>
-          <Text style={styles.date}>{date}</Text>
+          <Text style={styles.reward}>{reward}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="location-outline" size={16} color="#666" />
+          <Text style={styles.infoText} numberOfLines={1}>{location}</Text>
         </View>
         
-        {reward && (
-          <View style={styles.rewardContainer}>
-            <Ionicons name="cash-outline" size={16} color={Colors.error} />
-            <Text style={styles.rewardText}>Imbalan: {reward}</Text>
-          </View>
-        )}
-
-        <View style={styles.locationContainer}>
-          <Ionicons name="location-sharp" size={16} color="#666" />
-          <Text style={styles.locationText}>{location}</Text>
+        <View style={styles.infoRow}>
+          <Ionicons name="time-outline" size={16} color="#666" />
+          <Text style={styles.infoText}>{date}</Text>
         </View>
 
-        <TouchableOpacity style={styles.contactButton} onPress={onContact}>
-          <Ionicons name="logo-whatsapp" size={18} color="white" />
-          <Text style={styles.contactButtonText}>Hubungi Pemilik</Text>
+        {/* Tombol Lapor Temuan */}
+        <TouchableOpacity style={styles.foundBtn} onPress={onFoundPress}>
+          <Ionicons name="eye" size={20} color="white" />
+          <Text style={styles.foundText}>Saya Menemukan!</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -42,31 +40,27 @@ export default function LostCatCard({ name, reward, location, date, image, onCon
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
-    borderRadius: 20,
-    marginBottom: 16,
+    borderRadius: 16,
+    marginBottom: 20,
     overflow: 'hidden',
-    shadowColor: Colors.error, // Reddish shadow for urgency
-    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#FFEAEA', // Subtle red border
-  },
-  imageContainer: {
-    height: 180,
-    width: '100%',
-    position: 'relative',
+    borderColor: '#FFE0E0', // Outline kemerahan tipis
   },
   image: {
     width: '100%',
-    height: '100%',
+    height: 200, // Gambar lebih besar biar jelas
+    resizeMode: 'cover',
   },
   badge: {
     position: 'absolute',
     top: 12,
     left: 12,
-    backgroundColor: Colors.error,
+    backgroundColor: '#FF4D4D', // Merah terang
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -75,53 +69,41 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
+    letterSpacing: 1,
   },
   content: {
     padding: 16,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   name: {
     fontSize: 20,
     fontWeight: 'bold',
     color: Colors.text,
   },
-  date: {
-    fontSize: 12,
-    color: '#888',
-  },
-  rewardContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    backgroundColor: '#FFEBEE',
-    padding: 6,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    gap: 4,
-  },
-  rewardText: {
-    color: Colors.error,
+  reward: {
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 14,
+    color: '#D32F2F', // Merah tua untuk uang
   },
-  locationContainer: {
+  infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    gap: 4,
+    marginBottom: 6,
   },
-  locationText: {
-    color: '#666',
+  infoText: {
+    marginLeft: 6,
+    color: '#555',
     fontSize: 14,
     flex: 1,
   },
-  contactButton: {
-    backgroundColor: '#25D366', // WhatsApp Green
+  foundBtn: {
+    marginTop: 15,
+    backgroundColor: Colors.secondary, // Pakai Hijau Tua atau Warna Kontras
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -129,9 +111,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
   },
-  contactButtonText: {
+  foundText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
-  },
+  }
 });

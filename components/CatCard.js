@@ -5,22 +5,18 @@ import { Ionicons } from '@expo/vector-icons';
 export default function CatCard({ name, breed, age, image, onPress }) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      {/* Gambar Kucing */}
+      {/* Gambar dengan Tinggi Tetap (Fixed Height) */}
       <Image source={{ uri: image }} style={styles.image} />
       
-      {/* Info Kucing */}
       <View style={styles.infoContainer}>
         <View style={styles.header}>
-          <Text style={styles.name}>{name}</Text>
-          <Ionicons name="male-female" size={16} color={Colors.primary} />
+          <Text style={styles.name} numberOfLines={1}>{name}</Text>
+          <Ionicons name="male-female" size={14} color={Colors.primary} />
         </View>
-        <Text style={styles.breed}>{breed}</Text>
+        <Text style={styles.breed} numberOfLines={1}>{breed}</Text>
         
         <View style={styles.footer}>
           <Text style={styles.age}>{age}</Text>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>Detail</Text>
-          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -32,24 +28,22 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderRadius: 16,
     marginBottom: 16,
-    flexDirection: 'row', // Biar gambar di kiri, teks di kanan
-    padding: 10,
-    elevation: 2, // Bayangan di Android
-    shadowColor: '#000', // Bayangan di iOS
+    elevation: 3,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    overflow: 'hidden', // Biar gambar gak keluar radius
+    flex: 1, // Penting buat Grid
   },
   image: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
+    width: '100%',
+    height: 140, // KUNCI: Tinggi gambar dipaksa sama semua
+    resizeMode: 'cover',
     backgroundColor: '#eee',
   },
   infoContainer: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'space-between',
+    padding: 10,
   },
   header: {
     flexDirection: 'row',
@@ -57,39 +51,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: Colors.text,
+    flex: 1, // Biar teks panjang otomatis kepotong (...)
+    marginRight: 4,
   },
   breed: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#888',
     marginTop: 2,
+    marginBottom: 8,
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
   },
   age: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.primary,
     fontWeight: '600',
     backgroundColor: '#F0F5E5',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 8,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
+    borderRadius: 6,
+    overflow: 'hidden',
   },
 });
