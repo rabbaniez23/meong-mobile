@@ -2,6 +2,7 @@
   "expo": {
     "name": "meong-mobile",
     "slug": "meong-mobile",
+    "scheme": "meong-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

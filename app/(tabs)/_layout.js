@@ -1,18 +1,18 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; // Library icon yang tadi kita install
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false, // Hilangkan header bawaan (kita bikin sendiri nanti)
-        tabBarActiveTintColor: Colors.primary, // Warna hijau saat aktif
-        tabBarInactiveTintColor: '#999', // Warna abu saat tidak aktif
+        headerShown: false,
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: '#999',
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopWidth: 0,
-          elevation: 5, // Bayangan di Android
+          elevation: 5,
           height: 60,
           paddingBottom: 10,
           paddingTop: 10,
@@ -23,7 +23,6 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* 1. Menu Home */}
       <Tabs.Screen
         name="index"
         options={{
@@ -34,7 +33,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 2. Menu Adopsi */}
       <Tabs.Screen
         name="adopsi"
         options={{
@@ -45,7 +43,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 3. Menu Hilang */}
       <Tabs.Screen
         name="hilang"
         options={{
@@ -56,7 +53,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 4. Menu Profil */}
       <Tabs.Screen
         name="profil"
         options={{
