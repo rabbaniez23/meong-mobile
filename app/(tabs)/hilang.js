@@ -1,120 +1,113 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
-import LostCatCard from '../../components/LostCatCard';
-import CatCard from '../../components/CatCard'; 
-import FoundReportModal from '../../components/FoundReportModal'; // Import Modal
+import { Ionicons } from '@expo/vector-icons';
 
-// Mock Data
-const LOST_CATS = [
-  { id: '1', name: 'Si Belang', reward: 'Rp 500.000', location: 'Jl. Merdeka No. 45, Jakarta', date: 'Hilang 2 hari lalu', image: 'https://placekitten.com/400/300' },
-  { id: '2', name: 'Oreo', reward: 'Rp 1.000.000', location: 'Taman Suropati', date: 'Hilang 5 jam lalu', image: 'https://placekitten.com/401/300' },
-];
-
-const FOUND_CATS = [
-  { id: '3', name: 'Kucing Oren', breed: 'Domestik', age: 'Dewasa', image: 'https://placekitten.com/200/200' },
-  { id: '4', name: 'Kitten Putih', breed: 'Anggora', age: 'Kitten', image: 'https://placekitten.com/201/201' },
+// Data Dummy Kucing Hilang (Pakai gambar yang ada dulu)
+const LOST_CATS_DATA = [
+  { id: '1', name: 'Mochi', lastSeen: 'Kemarin Sore', location: 'Jl. Dago Pakar', image: require('../../assets/Putih.jpeg'), description: 'Kucing putih polos, mata biru, ada kalung merah. Hilang saat gerbang terbuka.' },
+  { id: '2', name: 'Simba', lastSeen: '2 Hari lalu', location: 'Komp. Setiabudi', image: require('../../assets/Oyen.jpeg'), description: 'Kucing oranye besar, agak pincang kaki belakang kanan. Terakhir dilihat di taman komplek.' },
+  { id: '3', name: 'Luna', lastSeen: 'Pagi ini', location: 'Alun-alun Bandung', image: require('../../assets/Abu.jpeg'), description: 'Kucing abu-abu kecil, sangat penakut. Mungkin bersembunyi di bawah mobil.' },
 ];
 
 export default function HilangScreen() {
-  const [activeTab, setActiveTab] = useState('Kehilangan');
-  
-  // State untuk Modal
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedCat, setSelectedCat] = useState(null);
+  const router = useRouter();
+  const [search, setSearch] = useState('');
 
-  const handleReportFound = (cat) => {
-    setSelectedCat(cat);
-    setModalVisible(true);
+  const filteredCats = LOST_CATS_DATA.filter(cat => 
+    cat.name.toLowerCase().includes(search.toLowerCase()) || 
+    cat.location.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const goToDetail = (item) => {
+    router.push({
+      pathname: '/(tabs)/hilang-detail',
+      params: { catData: JSON.stringify(item) }
+    });
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Darurat & Laporan 🚨</Text>
+  const renderItem = ({ item }) => (
+    <TouchableOpacity style={styles.card} onPress={() => goToDetail(item)} activeOpacity={0.9}>
+      <View style={styles.imageContainer}>
+        <Image source={item.image} style={styles.cardImage} />
+        {/* Badge "Hilang" ditaruh di atas gambar */}
+        <View style={styles.lostBadge}>
+            <Text style={styles.lostBadgeText}>Dicari</Text>
+        </View>
       </View>
-
-      {/* Toggle Switch */}
-      <View style={styles.toggleContainer}>
-        <TouchableOpacity 
-          style={[styles.toggleBtn, activeTab === 'Kehilangan' && styles.activeToggleLost]}
-          onPress={() => setActiveTab('Kehilangan')}
-        >
-          <Text style={[styles.toggleText, activeTab === 'Kehilangan' && styles.activeToggleText]}>
-            Kehilangan
-          </Text>
-        </TouchableOpacity>
+      
+      <View style={styles.cardContent}>
+        <View style={styles.headerContent}>
+            <Text style={styles.catName}>{item.name}</Text>
+            <Text style={styles.lastSeen}>🕒 {item.lastSeen}</Text>
+        </View>
         
-        <TouchableOpacity 
-          style={[styles.toggleBtn, activeTab === 'Ditemukan' && styles.activeToggleFound]}
-          onPress={() => setActiveTab('Ditemukan')}
-        >
-          <Text style={[styles.toggleText, activeTab === 'Ditemukan' && styles.activeToggleText]}>
-            Ditemukan
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.locationContainer}>
+            <Ionicons name="location-sharp" size={14} color={Colors.secondary} />
+            <Text style={styles.catLocation}>{item.location}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headerTitle}>Info Kucing Hilang</Text>
+        <Text style={styles.headerSubtitle}>Bantu mereka kembali ke rumah</Text>
       </View>
 
-      {/* List Content */}
-      <View style={styles.content}>
-        {activeTab === 'Kehilangan' ? (
-          <FlatList
-            data={LOST_CATS}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <LostCatCard 
-                {...item}
-                onFoundPress={() => handleReportFound(item)} // Buka Modal
-              />
-            )}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        ) : (
-          <FlatList
-            data={FOUND_CATS}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={{ flex: 1, margin: 6, maxWidth: '47%' }}>
-                <CatCard 
-                  name={item.name}
-                  breed={item.breed}
-                  age={item.age}
-                  image={item.image}
-                  onPress={() => {}}
-                />
-              </View>
-            )}
-            numColumns={2}
-            columnWrapperStyle={{ justifyContent: 'space-between' }}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+      <View style={styles.searchWrapper}>
+        <TextInput 
+            style={styles.searchInput}
+            placeholder="🔍 Cari lokasi atau nama..."
+            value={search}
+            onChangeText={setSearch}
+            placeholderTextColor={Colors.gray}
+            />
       </View>
 
-      {/* Masukkan Komponen Modal disini */}
-      <FoundReportModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)}
-        catName={selectedCat?.name || 'Kucing'}
+      <FlatList
+        data={filteredCats}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
       />
-
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: Colors.background },
-  header: { paddingHorizontal: 20, paddingTop: 10, marginBottom: 16 },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: Colors.text },
-  toggleContainer: { flexDirection: 'row', backgroundColor: '#EeEeEe', marginHorizontal: 20, borderRadius: 25, padding: 4, marginBottom: 20 },
-  toggleBtn: { flex: 1, paddingVertical: 10, borderRadius: 20, alignItems: 'center' },
-  activeToggleLost: { backgroundColor: '#FF4D4D' },
-  activeToggleFound: { backgroundColor: Colors.primary },
-  toggleText: { fontWeight: '600', color: '#888' },
-  activeToggleText: { color: 'white' },
-  content: { flex: 1, paddingHorizontal: 20 },
-  listContainer: { paddingBottom: 100 },
+  container: { flex: 1, backgroundColor: Colors.background },
+  headerContainer: { padding: 20, paddingTop: 50, paddingBottom: 10 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: Colors.secondary },
+  headerSubtitle: { fontSize: 14, color: Colors.text, marginTop: 5 },
+  searchWrapper: { paddingHorizontal: 20, marginBottom: 10 },
+  searchInput: {
+    backgroundColor: Colors.white, padding: 12, borderRadius: 12,
+    borderWidth: 1, borderColor: '#E0E0E0', fontSize: 16, color: Colors.text, ...Colors.shadow, elevation: 2
+  },
+  listContainer: { padding: 20 },
+  
+  // Card Styles (List ke bawah, bukan grid)
+  card: {
+    flexDirection: 'row', backgroundColor: Colors.white, borderRadius: 15, marginBottom: 15,
+    ...Colors.shadow, overflow: 'hidden', borderWidth: 1, borderColor: '#f0f0f0'
+  },
+  imageContainer: { position: 'relative', width: 120, height: 120 },
+  cardImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  lostBadge: {
+    position: 'absolute', top: 10, left: 10, backgroundColor: 'rgba(76, 106, 76, 0.8)', // Warna secondary transparan
+    paddingVertical: 4, paddingHorizontal: 10, borderRadius: 5
+  },
+  lostBadgeText: { color: Colors.white, fontSize: 10, fontWeight: 'bold' },
+  
+  cardContent: { flex: 1, padding: 15, justifyContent: 'center' },
+  headerContent: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  catName: { fontSize: 18, fontWeight: 'bold', color: Colors.secondary },
+  lastSeen: { fontSize: 12, color: '#888', fontStyle: 'italic' },
+  locationContainer: { flexDirection: 'row', alignItems: 'center' },
+  catLocation: { fontSize: 14, color: Colors.text, marginLeft: 5 },
 });

@@ -1,67 +1,92 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: Colors.secondary, // Ganti jadi secondary (Hijau Tua) biar lebih tegas
+        tabBarInactiveTintColor: '#CDCDE0',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 0,
-          elevation: 5,
-          height: 60,
-          paddingBottom: 10,
+          backgroundColor: Colors.white,
+          borderTopWidth: 1,
+          borderTopColor: '#F0F0F0',
+          height: 84, 
           paddingTop: 10,
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '500',
+          fontWeight: '600',
+          marginBottom: 10,
         },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
-        }}
-      />
-
+      {/* 1. ADOPSI */}
       <Tabs.Screen
         name="adopsi"
         options={{
           title: 'Adopsi',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="paw" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'paw' : 'paw-outline'} size={24} color={color} />
           ),
         }}
       />
 
+      {/* 2. LAPOR */}
       <Tabs.Screen
         name="hilang"
         options={{
-          title: 'Darurat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="alert-circle" size={size} color={color} />
+          title: 'Lapor',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'megaphone' : 'megaphone-outline'} size={24} color={color} />
           ),
         }}
       />
 
+      {/* 3. DONASI */}
       <Tabs.Screen
-        name="profil"
+        name="donasi"
         options={{
-          title: 'Akun',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
+          title: 'Donasi',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'heart' : 'heart-outline'} size={24} color={color} />
           ),
         }}
       />
+
+      {/* 4. PROFIL */}
+      <Tabs.Screen
+        name="profil"
+        options={{
+          title: 'Profil',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={24} color={color} />
+          ),
+        }}
+      />
+      
+      {/* --- HALAMAN YANGDISEMBUNYIKAN DARI MENU (href: null) --- */}
+      
+      {/* Detail Adopsi (Disembunyikan) */}
+      <Tabs.Screen 
+        name="adopsi-detail" 
+        options={{ 
+          href: null, // Ini kuncinya: null artinya tombolnya hilang
+        }} 
+      />
+
+      {/* Detail Hilang (Disembunyikan) */}
+      <Tabs.Screen 
+        name="hilang-detail" 
+        options={{ 
+          href: null, 
+        }} 
+      />
+
+      {/* Sembunyikan index jika ada sisa */}
+      <Tabs.Screen name="index" options={{ href: null }} /> 
     </Tabs>
   );
 }
