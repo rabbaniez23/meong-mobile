@@ -1,75 +1,75 @@
+import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import Badge from './ui/Badge';
 
-export default function LostCatCard({ name, reward, location, date, image, onFoundPress }) {
+export default function LostCatCard({ name, lastSeen, location, image, onPress, ...props }) {
   return (
-    <View style={styles.card}>
-      <Image source={{ uri: image }} style={styles.image} />
-      
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>DICARI</Text>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
+      <View style={styles.imageContainer}>
+        <Image source={image} style={styles.image} />
+        <View style={styles.badgeContainer}>
+             <Badge text="Dicari" variant="error" />
+        </View>
       </View>
-
+      
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.name}>{name}</Text>
-          <Text style={styles.reward}>{reward}</Text>
+          <Text style={styles.lastSeen}>🕒 {lastSeen}</Text>
         </View>
 
-        <View style={styles.infoRow}>
-          <Ionicons name="location-outline" size={16} color="#666" />
-          <Text style={styles.infoText} numberOfLines={1}>{location}</Text>
+        <View style={styles.locationRow}>
+          <Ionicons name="location" size={16} color={Colors.secondary} />
+          <Text style={styles.location} numberOfLines={1}>{location}</Text>
         </View>
         
-        <View style={styles.infoRow}>
-          <Ionicons name="time-outline" size={16} color="#666" />
-          <Text style={styles.infoText}>{date}</Text>
-        </View>
+        {/* Description & Reward */}
+        {props.description && (
+             <Text style={styles.description} numberOfLines={2}>{props.description}</Text>
+        )}
+        
+        {props.reward && (
+            <View style={styles.rewardContainer}>
+                <Ionicons name="gift-outline" size={14} color="#D32F2F" />
+                <Text style={styles.rewardText}>Imbalan: {props.reward}</Text>
+            </View>
+        )}
 
-        {/* Tombol Lapor Temuan */}
-        <TouchableOpacity style={styles.foundBtn} onPress={onFoundPress}>
-          <Ionicons name="eye" size={20} color="white" />
-          <Text style={styles.foundText}>Saya Menemukan!</Text>
-        </TouchableOpacity>
+        <View style={styles.footer}>
+            <Text style={styles.detailsLink}>Lihat Detail</Text>
+            <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    marginBottom: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    marginBottom: 16,
+    ...Colors.shadow,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#FFE0E0', // Outline kemerahan tipis
+    borderColor: '#F5F5F5',
+  },
+  imageContainer: {
+    height: 180,
+    width: '100%',
+    position: 'relative',
   },
   image: {
     width: '100%',
-    height: 200, // Gambar lebih besar biar jelas
+    height: '100%',
     resizeMode: 'cover',
   },
-  badge: {
+  badgeContainer: {
     position: 'absolute',
-    top: 12,
-    left: 12,
-    backgroundColor: '#FF4D4D', // Merah terang
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  badgeText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 12,
-    letterSpacing: 1,
+    top: 15,
+    left: 15,
   },
   content: {
     padding: 16,
@@ -78,42 +78,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   name: {
     fontSize: 20,
     fontWeight: 'bold',
     color: Colors.text,
   },
-  reward: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#D32F2F', // Merah tua untuk uang
+  lastSeen: {
+    fontSize: 12,
+    color: '#888',
+    fontStyle: 'italic',
   },
-  infoRow: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 12,
+    gap: 4,
   },
-  infoText: {
-    marginLeft: 6,
-    color: '#555',
+  location: {
     fontSize: 14,
+    color: '#666',
     flex: 1,
   },
-  foundBtn: {
-    marginTop: 15,
-    backgroundColor: Colors.secondary, // Pakai Hijau Tua atau Warna Kontras
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 8,
+  footer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: '#F0F0F0',
+      paddingTop: 12,
   },
-  foundText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+  detailsLink: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: Colors.primary,
+  },
+  description: {
+      fontSize: 13,
+      color: '#555',
+      marginBottom: 10,
+      lineHeight: 18,
+  },
+  rewardContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#FFEBEE',
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      marginBottom: 12,
+      gap: 4,
+  },
+  rewardText: {
+      fontSize: 12,
+      color: '#D32F2F',
+      fontWeight: 'bold',
   }
 });

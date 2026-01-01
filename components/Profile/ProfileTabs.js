@@ -1,65 +1,63 @@
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Colors } from '../../constants/Colors';
 
 export default function ProfileTabs({ activeTab, setActiveTab }) {
-  const tabs = ['Postingan', 'Lamaran', 'Donasi', 'Inbox'];
+  const tabs = ['Riwayat Adopsi', 'Riwayat Donasi', 'Tentang'];
 
   return (
     <View style={styles.container}>
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {tabs.map((tab) => {
+       {tabs.map((tab) => {
           const isActive = activeTab === tab;
           return (
             <TouchableOpacity
               key={tab}
-              style={[
-                styles.tabButton,
-                isActive && styles.activeTabButton,
-              ]}
+              style={[styles.tabButton, isActive && styles.activeTabButton]}
               onPress={() => setActiveTab(tab)}
             >
               <Text style={[styles.tabText, isActive && styles.activeTabText]}>
                 {tab}
               </Text>
+              {isActive && <View style={styles.indicator} />}
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
-    marginBottom: 16,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    gap: 12,
+    flexDirection: 'row',
+    marginTop: 20,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: Colors.primary,
+    flex: 1,
+    paddingVertical: 15,
+    alignItems: 'center',
+    position: 'relative',
   },
   activeTabButton: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    // backgroundColor: '#F9F9F9',
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.text,
+    color: '#999',
   },
   activeTabText: {
-    color: Colors.white,
+    color: Colors.secondary,
+    fontWeight: 'bold',
+  },
+  indicator: {
+    position: 'absolute',
+    bottom: 0,
+    width: '40%',
+    height: 3,
+    backgroundColor: Colors.secondary,
+    borderRadius: 3,
   },
 });

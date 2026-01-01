@@ -34,18 +34,29 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 2. LAPOR */}
+      {/* 2. LAPOR (Hilang) */}
       <Tabs.Screen
         name="hilang"
         options={{
           title: 'Lapor',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'megaphone' : 'megaphone-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'alert-circle' : 'alert-circle-outline'} size={24} color={color} />
           ),
         }}
       />
 
-      {/* 3. DONASI */}
+      {/* 3. KOMUNITAS (NEW CENTER) */}
+      <Tabs.Screen
+        name="komunitas"
+        options={{
+          title: 'Komunitas',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'chatbubbles' : 'chatbubbles-outline'} size={26} color={color} />
+          ),
+        }}
+      />
+
+      {/* 4. DONASI */}
       <Tabs.Screen
         name="donasi"
         options={{
@@ -56,7 +67,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 4. PROFIL */}
+      {/* 5. PROFIL */}
       <Tabs.Screen
         name="profil"
         options={{
@@ -67,25 +78,11 @@ export default function TabLayout() {
         }}
       />
       
-      {/* --- HALAMAN YANGDISEMBUNYIKAN DARI MENU (href: null) --- */}
-      
-      {/* Detail Adopsi (Disembunyikan) */}
-      <Tabs.Screen 
-        name="adopsi-detail" 
-        options={{ 
-          href: null, // Ini kuncinya: null artinya tombolnya hilang
-        }} 
-      />
-
-      {/* Detail Hilang (Disembunyikan) */}
-      <Tabs.Screen 
-        name="hilang-detail" 
-        options={{ 
-          href: null, 
-        }} 
-      />
-
-      {/* Sembunyikan index jika ada sisa */}
+      {/* --- HIDDEN SCREENS --- */}
+      <Tabs.Screen name="adopsi-detail" options={{ href: null }} />
+      <Tabs.Screen name="hilang-detail" options={{ href: null }} />
+      <Tabs.Screen name="donasi-detail" options={{ href: null }} />
+      <Tabs.Screen name="donasi-payment" options={{ href: null }} />
       <Tabs.Screen name="index" options={{ href: null }} /> 
     </Tabs>
   );

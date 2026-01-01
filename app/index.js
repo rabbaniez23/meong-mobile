@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors } from '../constants/Colors'; // Path disesuaikan (hanya naik 1 level)
+import { Colors } from '../constants/Colors';
+import ScreenWrapper from '../components/ui/ScreenWrapper';
+import Button from '../components/ui/Button';
 
 const { width } = Dimensions.get('window');
 
@@ -9,106 +11,153 @@ export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* 1. HERO SECTION */}
-      <View style={styles.heroSection}>
-        <View style={styles.heroContent}>
-          <Text style={styles.heroTitle}>Welcome to Meong id</Text>
-          <Text style={styles.heroSubtitle}>
-            Platform Kesejahteraan Kucing No. 1 di Indonesia
-          </Text>
-          <Text style={styles.heroDescription}>
-            Lapor kucing hilang, adopsi teman baru, dan bergabung dengan komunitas pecinta kucing sekarang juga!
-          </Text>
+    <ScreenWrapper style={{ paddingHorizontal: 0 }} backgroundColor={Colors.background}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* 1. HERO SECTION */}
+        <View style={styles.heroSection}>
+          <Image 
+            source={require('../assets/kucing.png')} 
+            style={styles.heroImage} 
+            resizeMode="contain"
+          />
           
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={styles.btnPrimary} 
-              onPress={() => router.push('/signup')}
-            >
-              <Text style={styles.btnText}>Daftar Sekarang</Text>
-            </TouchableOpacity>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroTitle}>Welcome to Meong id</Text>
+            <Text style={styles.heroSubtitle}>
+              Platform Kesejahteraan Kucing No. 1 di Indonesia
+            </Text>
+            <Text style={styles.heroDescription}>
+              Lapor kucing hilang, adopsi teman baru, dan bergabung dengan komunitas pecinta kucing sekarang juga!
+            </Text>
             
-            <TouchableOpacity 
-              style={[styles.btnPrimary, styles.btnOutline]} 
-              onPress={() => router.push('/login')}
-            >
-              <Text style={[styles.btnText, styles.btnOutlineText]}>Masuk</Text>
-            </TouchableOpacity>
+            <View style={styles.buttonContainer}>
+              <Button 
+                title="Daftar Sekarang" 
+                onPress={() => router.push('/signup')}
+                style={{ flex: 1 }}
+              />
+              <Button 
+                title="Masuk" 
+                variant="outline" 
+                onPress={() => router.push('/login')}
+                style={{ flex: 1 }}
+              />
+            </View>
           </View>
         </View>
 
-        <Image 
-          source={require('../assets/kucing.png')} 
-          style={styles.heroImage} 
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* 2. Banner Informasi */}
-      <View style={styles.infoSection}>
-        <Text style={styles.sectionTitle}>Kenapa Meong id?</Text>
-        <View style={styles.gridContainer}>
-          <View style={styles.infoCard}>
-            <Text style={styles.emoji}>🏠</Text>
-            <Text style={styles.cardTitle}>Adopsi Mudah</Text>
-            <Text style={styles.cardDesc}>Temukan teman bulu impianmu.</Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Text style={styles.emoji}>📢</Text>
-            <Text style={styles.cardTitle}>Lapor Hilang</Text>
-            <Text style={styles.cardDesc}>Bantu cari kucing yang hilang.</Text>
-          </View>
-           <View style={styles.infoCard}>
-            <Text style={styles.emoji}>🤝</Text>
-            <Text style={styles.cardTitle}>Donasi</Text>
-            <Text style={styles.cardDesc}>Bantu kucing jalanan.</Text>
+        {/* 2. Banner Informasi */}
+        <View style={styles.infoSection}>
+          <Text style={styles.sectionTitle}>Kenapa Meong id?</Text>
+          <View style={styles.gridContainer}>
+            <InfoCard emoji="🏠" title="Adopsi Mudah" desc="Temukan teman bulu impianmu." />
+            <InfoCard emoji="📢" title="Lapor Hilang" desc="Bantu cari kucing yang hilang." />
+            <InfoCard emoji="🤝" title="Donasi" desc="Bantu kucing jalanan." />
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </ScreenWrapper>
+  );
+}
+
+function InfoCard({ emoji, title, desc }) {
+  return (
+    <View style={styles.infoCard}>
+      <Text style={styles.emoji}>{emoji}</Text>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardDesc}>{desc}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
   heroSection: {
-    backgroundColor: Colors.background,
-    padding: 20,
     alignItems: 'center',
-    borderBottomRightRadius: 30,
-    borderBottomLeftRadius: 30,
-    paddingTop: 60,
+    paddingTop: 40,
+    width: '100%',
   },
-  heroTitle: { fontSize: 28, fontWeight: 'bold', color: Colors.secondary, textAlign: 'center', marginBottom: 10 },
-  heroSubtitle: { fontSize: 16, fontWeight: '600', color: Colors.primary, textAlign: 'center', marginBottom: 5 },
-  heroDescription: { fontSize: 14, color: Colors.text, textAlign: 'center', marginBottom: 20, lineHeight: 22 },
-  heroImage: { width: width * 0.85, height: 220, marginTop: 10 },
-  buttonContainer: { flexDirection: 'row', gap: 12, justifyContent: 'center', marginTop: 10 },
-  btnPrimary: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 25,
+  heroImage: { 
+    width: width * 0.9, 
+    height: 250, 
+    marginBottom: 20 
+  },
+  heroContent: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 30,
+    width: '100%',
+    alignItems: 'center',
     ...Colors.shadow,
+    paddingBottom: 50,
   },
-  btnText: { color: Colors.white, fontWeight: 'bold', fontSize: 16 },
-  btnOutline: { backgroundColor: 'transparent', borderWidth: 2, borderColor: Colors.secondary },
-  btnOutlineText: { color: Colors.secondary },
-  infoSection: { padding: 24 },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', color: Colors.secondary, marginBottom: 16, textAlign: 'center' },
-  gridContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
+  heroTitle: { 
+    fontSize: 28, 
+    fontWeight: 'bold', 
+    color: Colors.secondary, 
+    textAlign: 'center', 
+    marginBottom: 10 
+  },
+  heroSubtitle: { 
+    fontSize: 16, 
+    fontWeight: '600', 
+    color: Colors.primary, 
+    textAlign: 'center', 
+    marginBottom: 12 
+  },
+  heroDescription: { 
+    fontSize: 14, 
+    color: Colors.text, 
+    textAlign: 'center', 
+    marginBottom: 30, 
+    lineHeight: 22,
+    paddingHorizontal: 10,
+  },
+  buttonContainer: { 
+    flexDirection: 'row', 
+    gap: 15, 
+    width: '100%',
+  },
+  infoSection: { 
+    padding: 24,
+    backgroundColor: Colors.white 
+  },
+  sectionTitle: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: Colors.secondary, 
+    marginBottom: 20, 
+    textAlign: 'center' 
+  },
+  gridContainer: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    gap: 12 
+  },
   infoCard: {
     flex: 1,
     backgroundColor: Colors.white,
-    padding: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
     borderRadius: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: '#f0f0f0',
     ...Colors.shadow,
+    elevation: 3, // Slightly softer shadow
   },
-  emoji: { fontSize: 30, marginBottom: 5 },
-  cardTitle: { fontSize: 14, fontWeight: 'bold', color: Colors.secondary, marginBottom: 2, textAlign: 'center' },
-  cardDesc: { fontSize: 10, color: '#666', textAlign: 'center' },
+  emoji: { fontSize: 32, marginBottom: 10 },
+  cardTitle: { 
+    fontSize: 13, 
+    fontWeight: 'bold', 
+    color: Colors.secondary, 
+    marginBottom: 5, 
+    textAlign: 'center' 
+  },
+  cardDesc: { 
+    fontSize: 11, 
+    color: '#888', 
+    textAlign: 'center', 
+    lineHeight: 16 
+  },
 });

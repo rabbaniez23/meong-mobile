@@ -1,129 +1,185 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
+import { View, StyleSheet, ScrollView, SafeAreaView, Alert, Text, TouchableOpacity, Image, Modal } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import ProfileStats from '../../components/Profile/ProfileStats';
-import ProfileTabs from '../../components/Profile/ProfileTabs';
-import ActionListItem from '../../components/Profile/ActionListItem';
-import CatCard from '../../components/CatCard';
+import ProfileHeader from '../../components/Profile/ProfileHeader';
+import IdentityGrid from '../../components/Profile/IdentityGrid';
+import StatsOverview from '../../components/Profile/StatsOverview';
+import ActivityTabs from '../../components/Profile/ActivityTabs';
+import HistoryList from '../../components/Profile/HistoryList';
+import LostCatCard from '../../components/LostCatCard';
+
+// MOCK USER DATA (Comprehensive)
+const USER_DATA = {
+  name: "Rizki Rabbani",
+  email: "rizki.r@upi.edu",
+  role: "Cat Guardian",
+  avatar: require('../../assets/kucing.png'), 
+  job: "Software Engineer",
+  age: 24,
+  location: "Bandung, ID",
+  joinDate: "Jan 2024",
+  motivation: "Setiap kucing berhak mendapatkan rumah yang hangat dan penuh kasih sayang.",
+  stats: {
+    adoptions: 2,
+    reports: 3,
+    donated: "500kb" // 500rb abbreviated
+  }
+};
+
+// HISTORY DATA MOCK
+const ADOPTION_HISTORY = [
+    { id: '1', catName: 'Miko', date: '10 Jan 2025', catBreed: 'Domestik', status: 'Approved', image: require('../../assets/Miko.jpeg') },
+    { id: '2', catName: 'Oyen', date: '05 Des 2024', catBreed: 'Orange', status: 'Rejected', image: require('../../assets/Oyen.jpeg') },
+];
+
+const REPORTS_HISTORY = [
+    { id: '1', name: 'Mochi', lastSeen: 'Kemarin Sore', location: 'Jl. Dago', image: require('../../assets/Putih.jpeg'), status: 'Dicari' },
+    { id: '2', name: 'Tom', lastSeen: '1 Minggu lalu', location: 'Gasibu', image: require('../../assets/Abu.jpeg'), status: 'Ditemukan' },
+];
+
+const DONATION_HISTORY = [
+    { id: '1', amount: '50.000', date: '20 Des 2024', campaign: 'Bantu Kucing Jalanan', status: 'Berhasil' },
+    { id: '2', amount: '100.000', date: '15 Nov 2024', campaign: 'Pengobatan Muezza', status: 'Berhasil' },
+    { id: '3', amount: '25.000', date: '01 Nov 2024', campaign: 'Makanan Shelter', status: 'Pending' },
+];
+
+const INCOMING_REQUESTS = [
+    { 
+        id: '1', 
+        requester: 'Budi Santoso', 
+        catName: 'Hattoo', 
+        date: 'Baru saja', 
+        message: 'Saya berminat adopsi Hatto, sudah punya pengalaman 5 tahun memelihara kucing.', 
+        avatar: null,
+        details: {
+            job: 'Wiraswasta',
+            age: 29,
+            location: 'Cimahi',
+            history: 'Pernah adopsi 2 kucing domestik.',
+            houseType: 'Rumah Pribadi (Ada Halaman)'
+        }
+    },
+    { 
+        id: '2', 
+        requester: 'Siti Aisyah', 
+        catName: 'Hattoo', 
+        date: '1 Jam lalu', 
+        message: 'Halo, apakah Hattoo masih available?', 
+        avatar: null,
+        details: {
+            job: 'Mahasiswa',
+            age: 21,
+            location: 'Dago',
+            history: 'Baru pertama kali ingin adopsi.',
+            houseType: 'Kost (Pet Friendly)'
+        }
+    },
+];
 
 export default function ProfilScreen() {
-  const [activeTab, setActiveTab] = useState('Postingan');
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('Riwayat Adopsi');
 
-  // --- Mock Data ---
-  const MOCK_POSTS = [
-    { id: '1', name: 'Mochi', breed: 'Kucing Kampung', age: '1.5th', image: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop' },
-    { id: '2', name: 'Oyen', breed: 'Domestik', age: '8bln', image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=2043&auto=format&fit=crop' },
-  ];
+  const handleEdit = () => {
+      router.push('/edit-profile'); 
+  };
 
-  const MOCK_LAMARAN = [
-    { id: '1', title: 'Adopsi Luna', subtitle: 'Pemilik: Budi Santoso', status: 'Waiting', type: 'Adopsi' },
-    { id: '2', title: 'Adopsi Garfield', subtitle: 'Pemilik: Siti Aminah', status: 'Rejected', type: 'Adopsi' },
-  ];
-
-  const MOCK_DONASI = [
-    { id: '1', title: 'Donasi Makanan', subtitle: 'Campaign: Bantu Kucing Pasar', status: 'Selesai', type: 'Donasi', date: '12 Okt 2023' },
-    { id: '2', title: 'Donasi Obat', subtitle: 'Campaign: Steril Gratis', status: 'Selesai', type: 'Donasi', date: '28 Sep 2023' },
-    { id: '3', title: 'Uang Tunai', subtitle: 'Campaign: Rumah Singgah', status: 'Pending', type: 'Donasi', date: '1 Jan 2024' },
-  ];
-
-  const MOCK_INBOX = [
-    { id: '1', title: 'Permintaan Adopsi Mochi', subtitle: 'Dari: Ahmad Dhani', status: 'Waiting', type: 'Adopsi' },
-    { id: '2', title: 'Permintaan Adopsi Oyen', subtitle: 'Dari: Raisa', status: 'Approved', type: 'Adopsi' },
-  ];
-
-  // --- Render Content Based on Tab ---
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'Postingan':
-        return (
-          <View style={styles.listContainer}>
-            {MOCK_POSTS.map((item) => (
-              <CatCard 
-                key={item.id}
-                name={item.name} 
-                breed={item.breed} 
-                age={item.age} 
-                image={item.image}
-                onPress={() => {}}
-              />
-            ))}
-          </View>
-        );
-      case 'Lamaran':
-        return (
-          <View style={styles.listContainer}>
-             {MOCK_LAMARAN.map((item) => (
-              <ActionListItem key={item.id} {...item} />
-             ))}
-          </View>
-        );
-      case 'Donasi':
-        return (
-          <View style={styles.listContainer}>
-            {MOCK_DONASI.map((item) => (
-              <ActionListItem key={item.id} {...item} />
-             ))}
-          </View>
-        );
-      case 'Inbox':
-        return (
-          <View style={styles.listContainer}>
-            {MOCK_INBOX.map((item) => (
-              <ActionListItem key={item.id} {...item} />
-             ))}
-          </View>
-        );
-      default:
-        return null;
-    }
+  const showRequestDetails = (req) => {
+      Alert.alert(
+          `Profil: ${req.requester}`,
+          `Pekerjaan: ${req.details.job}\nUsia: ${req.details.age} Tahun\nLokasi: ${req.details.location}\n\nRiwayat: ${req.details.history}\nTempat Tinggal: ${req.details.houseType}\n\nPesan:\n"${req.message}"`,
+          [
+              { text: 'Tutup', style: 'cancel' },
+              { text: 'Lihat Chat', onPress: () => console.log('Go to chat') } // Placeholder
+          ]
+      );
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         
-        {/* Header Section */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profil Saya</Text>
-          <TouchableOpacity>
-            <Ionicons name="settings-outline" size={24} color={Colors.text} />
-          </TouchableOpacity>
-        </View>
+        {/* 1. Header Card */}
+        <ProfileHeader user={USER_DATA} onEdit={handleEdit} />
 
-        {/* User Info */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-             <Image 
-              source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop' }} 
-              style={styles.avatar} 
-            />
-            <View style={styles.verifiedBadge}>
-              <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
-            </View>
-          </View>
-          
-          <Text style={styles.userName}>Rabbani Ez</Text>
-          <Text style={styles.userRole}>Cat Lover & Adopter</Text>
-          
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit Profil</Text>
-          </TouchableOpacity>
-        </View>
+        {/* 2. Identity Grid */}
+        <IdentityGrid user={USER_DATA} />
 
-        {/* Statistics */}
-        <ProfileStats />
+        {/* 3. Stats Overview */}
+        <StatsOverview stats={USER_DATA.stats} />
 
-        {/* Dynamic Tabs */}
-        <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+        {/* 4. Activity Tabs */}
+        <ActivityTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* Content Area */}
+        {/* 5. Content Area */}
         <View style={styles.contentArea}>
-          {renderContent()}
+            {activeTab === 'Riwayat Adopsi' && (
+                <HistoryList data={ADOPTION_HISTORY} type="adoption" />
+            )}
+
+            {activeTab === 'Permintaan' && (
+                 <View>
+                    {INCOMING_REQUESTS.map((req) => (
+                        <TouchableOpacity key={req.id} style={styles.requestCard} onPress={() => showRequestDetails(req)} activeOpacity={0.7}>
+                            <View style={styles.requestHeader}>
+                                <Image source={require('../../assets/icon.png')} style={styles.reqAvatar} />
+                                <View style={{ flex: 1 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={styles.reqName}>{req.requester}</Text>
+                                        <Ionicons name="information-circle-outline" size={16} color={Colors.primary} style={{ marginLeft: 4 }} />
+                                    </View>
+                                    <Text style={styles.reqInfo}>Ingin adopsi <Text style={{ fontWeight: 'bold' }}>{req.catName}</Text></Text>
+                                </View>
+                                <Text style={styles.reqTime}>{req.date}</Text>
+                            </View>
+                            <Text style={styles.reqMsg} numberOfLines={2}>"{req.message}"</Text>
+                            
+                            {/* Tags for Quick Info */}
+                            <View style={styles.tagRow}>
+                                <View style={styles.tag}><Text style={styles.tagText}>{req.details.job}</Text></View>
+                                <View style={styles.tag}><Text style={styles.tagText}>{req.details.location}</Text></View>
+                            </View>
+
+                            <View style={styles.reqActions}>
+                                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FFEBEE', marginRight: 10 }]}>
+                                    <Text style={{ color: Colors.error, fontWeight: 'bold', fontSize: 12 }}>Tolak</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#E8F5E9' }]}>
+                                    <Text style={{ color: Colors.secondary, fontWeight: 'bold', fontSize: 12 }}>Terima Diskusi</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                 </View>
+            )}
+
+            {activeTab === 'Laporan Saya' && (
+                <View>
+                    {REPORTS_HISTORY.map((report) => (
+                        <View key={report.id} style={{ marginBottom: 10 }}>
+                            <LostCatCard 
+                                name={report.name}
+                                lastSeen={report.lastSeen}
+                                location={report.location}
+                                image={report.image}
+                                onPress={() => {}}
+                            />
+                        </View>
+                    ))}
+                </View>
+            )}
+
+            {activeTab === 'Donasi' && (
+                <HistoryList data={DONATION_HISTORY} type="donation" />
+            )}
         </View>
-        
-        {/* Padding for bottom nav */}
-        {/* <View style={{ height: 100 }} />  <-- Removed in favor of contentContainerStyle */}
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={() => router.replace('/login')}>
+            <Text style={styles.logoutText}>Keluar Akun</Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
@@ -131,71 +187,92 @@ export default function ProfilScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: Colors.background,
+    paddingTop: 30,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: Colors.secondary,
-  },
-  profileSection: {
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  verifiedBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    padding: 2,
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  userRole: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
-  },
-  editButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-  },
-  editButtonText: {
-    color: Colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 50,
   },
   contentArea: {
-    paddingHorizontal: 20,
+    minHeight: 200,
   },
-  listContainer: {
-    gap: 0,
+  requestCard: {
+      backgroundColor: Colors.white,
+      padding: 16,
+      borderRadius: 16,
+      marginBottom: 12,
+      ...Colors.shadow,
+      borderWidth: 1,
+      borderColor: '#F0F0F0',
   },
+  requestHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+  },
+  reqAvatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      marginRight: 10,
+      backgroundColor: '#EEE',
+  },
+  reqName: {
+      fontWeight: 'bold',
+      color: Colors.text,
+      fontSize: 14,
+  },
+  reqInfo: {
+      fontSize: 12,
+      color: '#666',
+  },
+  reqTime: {
+      fontSize: 10,
+      color: '#999',
+  },
+  reqMsg: {
+      fontStyle: 'italic',
+      color: '#555',
+      marginBottom: 10,
+      fontSize: 13,
+  },
+  tagRow: {
+      flexDirection: 'row',
+      gap: 6,
+      marginBottom: 12,
+  },
+  tag: {
+      backgroundColor: '#F5F5F5',
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: 8,
+  },
+  tagText: {
+      fontSize: 10,
+      color: '#666',
+  },
+  reqActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      borderTopWidth: 1,
+      borderTopColor: '#F9F9F9',
+      paddingTop: 10,
+  },
+  actionBtn: {
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 20,
+  },
+  logoutBtn: {
+      marginTop: 20,
+      alignItems: 'center',
+      padding: 15,
+  },
+  logoutText: {
+      color: Colors.error,
+      fontWeight: 'bold',
+  }
 });

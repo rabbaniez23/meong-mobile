@@ -1,93 +1,109 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Colors } from '../constants/Colors'; // Naik satu folder
+import { Colors } from '../constants/Colors';
+import ScreenWrapper from '../components/ui/ScreenWrapper';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = () => {
     if (email && password) {
-      // Alert.alert("Berhasil", "Login berhasil!");
-      
-      // Ubah redirect ke ADOPSI
-      router.replace('/(tabs)/adopsi'); 
+      setIsLoading(true);
+      // Simulate API call
+      setTimeout(() => {
+        setIsLoading(false);
+        router.replace('/(tabs)/adopsi'); 
+      }, 1500);
     } else {
       Alert.alert("Gagal", "Mohon isi email dan password.");
     }
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <View style={styles.header}>
-        <Image source={require('../assets/icon.png')} style={styles.logo} />
-        <Text style={styles.title}>Selamat Datang!</Text>
-        <Text style={styles.subtitle}>Masuk untuk melanjutkan ke Meong id</Text>
-      </View>
+    <ScreenWrapper backgroundColor={Colors.background}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        >
+          <View style={styles.header}>
+            <Image source={require('../assets/icon.png')} style={styles.logo} />
+            <Text style={styles.title}>Selamat Datang!</Text>
+            <Text style={styles.subtitle}>Masuk untuk melanjutkan ke Meong id</Text>
+          </View>
 
-      <View style={styles.form}>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="nama@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
+          <View style={styles.form}>
+            <Input 
+              label="Email"
+              placeholder="nama@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+              icon="mail-outline"
+            />
+            
+            <Input 
+              label="Password"
+              placeholder="********" 
+              isPassword
+              value={password}
+              onChangeText={setPassword}
+              icon="lock-closed-outline"
+            />
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput 
-            style={styles.input} 
-            placeholder="********" 
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-        </View>
+            <Button 
+                title="Lupa Password?" 
+                variant="ghost" 
+                size="small" 
+                style={styles.forgotBtn}
+                textStyle={{ color: Colors.primary }}
+                onPress={() => {}}
+            />
 
-        <TouchableOpacity style={styles.forgotBtn}>
-          <Text style={styles.forgotText}>Lupa Password?</Text>
-        </TouchableOpacity>
+            <Button 
+              title="Masuk" 
+              onPress={handleLogin}
+              isLoading={isLoading}
+              style={{ marginTop: 10 }}
+            />
 
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.loginBtnText}>Masuk</Text>
-        </TouchableOpacity>
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Belum punya akun? </Text>
-          <TouchableOpacity onPress={() => router.push('/signup')}>
-            <Text style={styles.linkText}>Daftar Sekarang</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Belum punya akun? </Text>
+              <Button 
+                title="Daftar Sekarang" 
+                variant="ghost" 
+                size="small"
+                onPress={() => router.push('/signup')}
+                style={{ paddingHorizontal: 0, paddingVertical: 0 }}
+                textStyle={{ color: Colors.secondary }}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    justifyContent: 'center',
-    padding: 24,
-  },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 16,
+    width: 90,
+    height: 90,
+    marginBottom: 20,
     resizeMode: 'contain',
   },
   title: {
@@ -103,57 +119,21 @@ const styles = StyleSheet.create({
   },
   form: {
     backgroundColor: Colors.white,
-    padding: 24,
-    borderRadius: 20,
+    padding: 30,
+    borderRadius: 24,
     ...Colors.shadow,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: Colors.lightGray,
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: Colors.gray,
   },
   forgotBtn: {
     alignSelf: 'flex-end',
-    marginBottom: 24,
-  },
-  forgotText: {
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  loginBtn: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 24,
-    ...Colors.shadow,
-  },
-  loginBtnText: {
-    color: Colors.white,
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginBottom: 10,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
   },
   footerText: {
     color: '#666',
-  },
-  linkText: {
-    color: Colors.secondary,
-    fontWeight: 'bold',
   },
 });

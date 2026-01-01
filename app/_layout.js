@@ -3,15 +3,17 @@ import { Stack } from 'expo-router';
 export default function RootLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* Halaman Welcome (index.js) */}
+      {/* Welcome & Auth */}
       <Stack.Screen name="index" />
-      
-      {/* Halaman Login & Signup */}
       <Stack.Screen name="login" />
       <Stack.Screen name="signup" />
       
-      {/* Masuk ke Folder Tabs (Halaman Utama Member) */}
+      {/* Main App (Tabs) */}
       <Stack.Screen name="(tabs)" />
+      
+      {/* Fitur Tambahan (Full Screen) */}
+      <Stack.Screen name="edit-profile" options={{ presentation: 'modal' }} /> 
+      {/* presentation: 'modal' bikin efek muncul dari bawah (optional) */}
     </Stack>
   );
 }
