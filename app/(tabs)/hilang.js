@@ -8,12 +8,13 @@ import LostCatCard from '../../components/LostCatCard';
 import FilterBar from '../../components/FilterBar';
 import CustomHeader from '../../components/CustomHeader';
 
-// Expanded Dummy Data
+// Expanded Dummy Data with Geo Distance Simulation
 const LOST_DATA = [
   { id: '1', name: 'Mochi', lastSeen: 'Kemarin Sore', location: 'Jl. Dago Pakar',    image: require('../../assets/Putih.jpeg'),
     description: 'Kucing putih polos, kalung merah. Terakhir liat dikejar anjing kampung.',
     reward: 'Rp 500.000',
-    date: '2024-01-01' 
+    date: '2024-01-01',
+    distance: '0.5' // KM
   },
   { 
     id: '2', 
@@ -23,7 +24,8 @@ const LOST_DATA = [
     image: require('../../assets/Abu.jpeg'),
     description: 'Kucing abu-abu gemoy, agak pincang kaki belakang kiri. Tolong hubungi kalau lihat.',
     reward: null,
-    date: '2023-12-30'
+    date: '2023-12-30',
+    distance: '2.4' // KM
   },
   { 
     id: '3', 
@@ -33,7 +35,8 @@ const LOST_DATA = [
     image: require('../../assets/Oyen.jpeg'),
     description: 'Kucing oren barbar, tapi penurut kalau dikasih Whiskas. Kabur pas pintu pager kebuka.',
     reward: 'Rp 200.000',
-    date: '2024-01-02'
+    date: '2024-01-02',
+    distance: '5.2' // KM
   },
 ];
 
@@ -43,6 +46,9 @@ export default function HilangScreen() {
   const [filter, setFilter] = useState('Semua');
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Mock Sorting Logic: Sort by urgency (distance & date)
+  const [data, setData] = useState(LOST_DATA);
+
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -51,16 +57,21 @@ export default function HilangScreen() {
     }).start();
   }, []);
 
-  const filteredData = LOST_DATA.filter(item => {
+  const filteredData = data.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
                           item.location.toLowerCase().includes(search.toLowerCase());
     
     // Filter logic
     if (filter === 'Semua') return matchesSearch;
-    if (filter === 'Terbaru') return matchesSearch; 
-    if (filter === 'Imbalan') return matchesSearch; 
+    if (filter === 'Terdekat') return matchesSearch; // Should sort by distance actually
+    if (filter === 'Imbalan') return matchesSearch && item.reward; 
 
     return matchesSearch;
+  }).sort((a, b) => {
+      if (filter === 'Terdekat') {
+          return parseFloat(a.distance) - parseFloat(b.distance);
+      }
+      return 0; // Default order
   });
 
   const goToDetail = (item) => {
@@ -78,6 +89,7 @@ export default function HilangScreen() {
         image={item.image}
         description={item.description}
         reward={item.reward}
+        distance={item.distance}
         onPress={() => goToDetail(item)}
     />
   );
@@ -107,7 +119,7 @@ export default function HilangScreen() {
 
         <View style={{ marginBottom: 15 }}>
             <FilterBar 
-                filters={['Semua', 'Terbaru', 'Imbalan']}
+                filters={['Semua', 'Terdekat', 'Imbalan']}
                 activeFilter={filter}
                 onSelect={setFilter}
             />

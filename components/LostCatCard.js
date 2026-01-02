@@ -4,7 +4,19 @@ import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Badge from './ui/Badge';
 
-export default function LostCatCard({ name, lastSeen, location, image, onPress, ...props }) {
+export default function LostCatCard({ name, lastSeen, location, image, distance, onPress, ...props }) {
+    // Logic to determine color based on distance urgency
+    // Less than 1km = RED (Critical), Less than 3km = ORANGE (Warning), More = GREY
+    const getDistanceColor = (dist) => {
+        if (!dist) return Colors.secondary;
+        const val = parseFloat(dist);
+        if (val <= 1.0) return Colors.error;
+        if (val <= 3.0) return '#F57C00'; // Orange
+        return Colors.secondary;
+    };
+
+    const distColor = getDistanceColor(distance);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       <View style={styles.imageContainer}>
@@ -12,6 +24,14 @@ export default function LostCatCard({ name, lastSeen, location, image, onPress, 
         <View style={styles.badgeContainer}>
              <Badge text="Dicari" variant="error" />
         </View>
+        
+        {/* Radius Indicator */}
+        {distance && (
+            <View style={[styles.radiusIndicator, { backgroundColor: distColor }]}>
+                <Ionicons name="navigate" size={12} color="white" />
+                <Text style={styles.radiusText}>{distance} KM</Text>
+            </View>
+        )}
       </View>
       
       <View style={styles.content}>
@@ -38,7 +58,7 @@ export default function LostCatCard({ name, lastSeen, location, image, onPress, 
         )}
 
         <View style={styles.footer}>
-            <Text style={styles.detailsLink}>Lihat Detail</Text>
+            <Text style={styles.detailsLink}>Bantu Cari</Text>
             <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
         </View>
       </View>
@@ -70,6 +90,22 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 15,
     left: 15,
+  },
+  radiusIndicator: {
+      position: 'absolute',
+      bottom: 15,
+      right: 15,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+      gap: 4,
+  },
+  radiusText: {
+      color: 'white',
+      fontSize: 12,
+      fontWeight: 'bold',
   },
   content: {
     padding: 16,

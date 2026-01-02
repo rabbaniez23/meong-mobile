@@ -8,14 +8,14 @@ import ListingCard from '../../components/ListingCard';
 import FilterBar from '../../components/FilterBar';
 import CustomHeader from '../../components/CustomHeader';
 
-// Expanded Dummy Data
+// Expanded Dummy Data with Status
 const ADOPTION_DATA = [
-  { id: '1', name: 'Hattoo', breed: 'Domestik', age: '1 Thn', gender: 'Jantan', location: 'Bandung', image: require('../../assets/Hatto.jpeg'), description: 'Kucing aktif suka main tali. Vaksin lengkap.', user: { name: 'Rani K.' } },
-  { id: '2', name: 'Abu', breed: 'Anggora Mix', age: '5 Bln', gender: 'Betina', location: 'Jakarta', image: require('../../assets/Abu.jpeg'), description: 'Pemalu tapi manja.', user: { name: 'Dedi S.' } },
-  { id: '3', name: 'Oyen', breed: 'Tabby', age: '2 Thn', gender: 'Jantan', location: 'Surabaya', image: require('../../assets/Oyen.jpeg'), description: 'Raja makan, badan gembul.', user: { name: 'Meong Shelter' } },
-  { id: '4', name: 'Muezza', breed: 'Persia', age: '3 Thn', gender: 'Betina', location: 'Bandung', image: require('../../assets/kucing.png'), description: 'Sangat anggun dan penurut.', user: { name: 'Siti A.' } },
-  { id: '5', name: 'Leo', breed: 'Maine Coon', age: '1.5 Thn', gender: 'Jantan', location: 'Bogor', image: require('../../assets/Hatto.jpeg'), description: 'Besar dan fluffy. Butuh ruang luas.', user: { name: 'Budi G.' } },
-  { id: '6', name: 'Luna', breed: 'Siam', age: '8 Bln', gender: 'Betina', location: 'Depok', image: require('../../assets/Abu.jpeg'), description: 'Suara nyaring, suka diajak ngobrol.', user: { name: 'Rina P.' } },
+  { id: '1', name: 'Hattoo', breed: 'Domestik', age: '1 Thn', gender: 'Jantan', location: 'Bandung', image: require('../../assets/Hatto.jpeg'), description: 'Kucing aktif suka main tali. Vaksin lengkap.', user: { name: 'Rani K.' }, status: 'available' },
+  { id: '2', name: 'Abu', breed: 'Anggora Mix', age: '5 Bln', gender: 'Betina', location: 'Jakarta', image: require('../../assets/Abu.jpeg'), description: 'Pemalu tapi manja.', user: { name: 'Dedi S.' }, status: 'adopted' }, // Status Adopted
+  { id: '3', name: 'Oyen', breed: 'Tabby', age: '2 Thn', gender: 'Jantan', location: 'Surabaya', image: require('../../assets/Oyen.jpeg'), description: 'Raja makan, badan gembul.', user: { name: 'Meong Shelter' }, status: 'available' },
+  { id: '4', name: 'Muezza', breed: 'Persia', age: '3 Thn', gender: 'Betina', location: 'Bandung', image: require('../../assets/kucing.png'), description: 'Sangat anggun dan penurut.', user: { name: 'Siti A.' }, status: 'available' },
+  { id: '5', name: 'Leo', breed: 'Maine Coon', age: '1.5 Thn', gender: 'Jantan', location: 'Bogor', image: require('../../assets/Hatto.jpeg'), description: 'Besar dan fluffy. Butuh ruang luas.', user: { name: 'Budi G.' }, status: 'available' },
+  { id: '6', name: 'Luna', breed: 'Siam', age: '8 Bln', gender: 'Betina', location: 'Depok', image: require('../../assets/Abu.jpeg'), description: 'Suara nyaring, suka diajak ngobrol.', user: { name: 'Rina P.' }, status: 'available' },
 ];
 
 export default function AdopsiScreen() {
@@ -58,6 +58,7 @@ export default function AdopsiScreen() {
         age={item.age}
         gender={item.gender}
         image={item.image}
+        status={item.status} // Pass status
         onPress={() => goToDetail(item)}
     />
   );

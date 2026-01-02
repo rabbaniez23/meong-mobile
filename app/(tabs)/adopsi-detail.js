@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, Switch } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
 
 const { width, height } = Dimensions.get('window');
 
@@ -11,6 +12,11 @@ export default function AdopsiDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [modalVisible, setModalVisible] = useState(false);
+  
+  // Questionnaire State
+  const [hasExperience, setHasExperience] = useState(false);
+  const [hasFence, setHasFence] = useState(false);
+  const [isWillingToVaccinate, setIsWillingToVaccinate] = useState(false);
   const [reason, setReason] = useState('');
   
   let cat = { name: "Unknown" };
@@ -18,7 +24,19 @@ export default function AdopsiDetailScreen() {
     cat = JSON.parse(params.catData);
   }
 
+  const handleChat = () => {
+       const roomId = `room-adopt-${cat.id}-${Date.now()}`;
+       router.push({
+           pathname: '/chat-room',
+           params: { 
+               roomId: roomId,
+               context: `Adopsi: ${cat.name}`
+           }
+       });
+  };
+
   const handleSubmitAdoption = () => {
+      // Basic Validation
       if (!reason.trim()) {
           Alert.alert("Mohon isi alasan", "Tuliskan alasan singkat mengapa Anda ingin mengadopsi.");
           return;
@@ -27,12 +45,11 @@ export default function AdopsiDetailScreen() {
       setModalVisible(false);
       
       // Simulate sending to profile (Backend logic would go here)
-      // For now, simple Alert success
       setTimeout(() => {
           Alert.alert(
             "Berhasil Diajukan!", 
-            `Pengajuan untuk ${cat.name} telah dikirim ke pemilik. Cek status di Profil Anda nanti.`,
-            [{ text: "OK", onPress: () => router.back() }]
+            `Pengajuan Anda untuk ${cat.name} telah dikirim ke pemilik.\n\nData Screening:\n- Pengalaman: ${hasExperience ? 'Ya' : 'Tidak'}\n- Rumah Pagar: ${hasFence ? 'Ya' : 'Tidak'}`,
+            [{ text: "Lanjut Chat", onPress: handleChat }]
           );
       }, 500);
   };
@@ -74,6 +91,16 @@ export default function AdopsiDetailScreen() {
                 <AttributeItem label="Berat" value="3.5 kg" /> 
                 <AttributeItem label="Vaksin" value="Lengkap" />
             </View>
+            
+            {/* Persyaratan Adopsi Badges */}
+            <View style={styles.requirementsBox}>
+                <Text style={styles.reqTitle}>Persyaratan Adopsi:</Text>
+                <View style={styles.badgeRow}>
+                    <Badge text="Wajib Steril" variant="default" />
+                    <Badge text="Indoor Only" variant="default" />
+                    <Badge text="Komitmen Seumur Hidup" variant="success" />
+                </View>
+            </View>
 
             {/* Owner Section */}
             <View style={styles.ownerSection}>
@@ -84,7 +111,7 @@ export default function AdopsiDetailScreen() {
                         <Text style={styles.ownerName}>Meong Shelter Bandung</Text>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.chatBtn}>
+                <TouchableOpacity style={styles.chatBtn} onPress={handleChat}>
                     <Ionicons name="chatbubble-ellipses-outline" size={20} color={Colors.secondary} />
                 </TouchableOpacity>
             </View>
@@ -122,17 +149,55 @@ export default function AdopsiDetailScreen() {
                         </TouchableOpacity>
                     </View>
                     
-                    <Text style={styles.label}>Mengapa ingin mengadopsi {cat.name}?</Text>
-                    <TextInput 
-                        style={styles.textArea}
-                        placeholder="Contoh: Saya punya pengalaman merawat kucing dan memiliki rumah yang cukup luas..."
-                        multiline
-                        numberOfLines={4}
-                        value={reason}
-                        onChangeText={setReason}
-                    />
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <Text style={styles.subTitle}>Adoption Questionnaire</Text>
+                        <Text style={styles.descText}>Jawab pertanyaan ini agar pemilik yakin kamu adopter yang tepat.</Text>
 
-                    <Button title="Kirim Pengajuan" onPress={handleSubmitAdoption} style={{ marginTop: 20 }} />
+                        {/* Question 1 */}
+                        <View style={styles.questionRow}>
+                            <Text style={styles.questionText}>Punya pengalaman merawat kucing?</Text>
+                            <Switch 
+                                value={hasExperience} 
+                                onValueChange={setHasExperience}
+                                trackColor={{ false: "#767577", true: Colors.primary + '80' }}
+                                thumbColor={hasExperience ? Colors.primary : "#f4f3f4"}
+                            />
+                        </View>
+
+                        {/* Question 2 */}
+                        <View style={styles.questionRow}>
+                            <Text style={styles.questionText}>Apakah rumah memiliki pagar aman?</Text>
+                            <Switch 
+                                value={hasFence} 
+                                onValueChange={setHasFence}
+                                trackColor={{ false: "#767577", true: Colors.primary + '80' }}
+                                thumbColor={hasFence ? Colors.primary : "#f4f3f4"}
+                            />
+                        </View>
+                        
+                        {/* Question 3 */}
+                        <View style={styles.questionRow}>
+                            <Text style={styles.questionText}>Bersedia melengkapi vaksin/steril?</Text>
+                            <Switch 
+                                value={isWillingToVaccinate} 
+                                onValueChange={setIsWillingToVaccinate}
+                                trackColor={{ false: "#767577", true: Colors.primary + '80' }}
+                                thumbColor={isWillingToVaccinate ? Colors.primary : "#f4f3f4"}
+                            />
+                        </View>
+
+                        <Text style={[styles.label, { marginTop: 15 }]}>Alasan Adopsi & Lingkungan Rumah:</Text>
+                        <TextInput 
+                            style={styles.textArea}
+                            placeholder="Ceritakan tentang dirimu dan lingkungan rumahmu..."
+                            multiline
+                            numberOfLines={4}
+                            value={reason}
+                            onChangeText={setReason}
+                        />
+
+                        <Button title="Kirim Pengajuan" onPress={handleSubmitAdoption} style={{ marginBottom: 20 }} />
+                    </ScrollView>
                 </View>
             </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
@@ -235,6 +300,23 @@ const styles = StyleSheet.create({
       fontSize: 12,
       color: '#888',
   },
+  requirementsBox: {
+      marginBottom: 24,
+      backgroundColor: '#F9FAFB',
+      padding: 15,
+      borderRadius: 12,
+  },
+  reqTitle: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: '#555',
+  },
+  badgeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+  },
   ownerSection: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -305,6 +387,7 @@ const styles = StyleSheet.create({
       borderTopRightRadius: 24,
       padding: 24,
       paddingBottom: 40,
+      maxHeight: '80%', // Limit height
   },
   modalHeader: {
       flexDirection: 'row',
@@ -317,10 +400,37 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: Colors.text,
   },
+  subTitle: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      color: Colors.primary,
+      marginBottom: 5,
+  },
+  descText: {
+      fontSize: 12,
+      color: '#666',
+      marginBottom: 20,
+  },
+  questionRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 15,
+      paddingBottom: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: '#F0F0F0',
+  },
+  questionText: {
+      fontSize: 14,
+      color: '#333',
+      flex: 1,
+      paddingRight: 10,
+  },
   label: {
       fontSize: 14,
       color: '#666',
       marginBottom: 10,
+      fontWeight: '600',
   },
   textArea: {
       backgroundColor: '#F9F9F9',

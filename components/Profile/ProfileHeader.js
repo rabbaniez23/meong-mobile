@@ -20,12 +20,18 @@ export default function ProfileHeader({ user, onEdit }) {
             </View>
         </View>
         
-        <Text style={styles.name}>{user.name}</Text>
+        <View style={styles.nameRow}>
+            <Text style={styles.name}>{user.name}</Text>
+            {user.status === 'Verified Account' && (
+                <Ionicons name="checkmark-circle" size={20} color={Colors.primary} />
+            )}
+        </View>
+        
         <Text style={styles.email}>{user.email}</Text>
         
         {/* Quote / Motivation */}
         <View style={styles.quoteBox}>
-            <Text style={styles.quote}>"{user.motivation}"</Text>
+            <Text style={styles.quote}>"{user.motivation || 'Cat Lover'}"</Text>
         </View>
       </View>
     </View>
@@ -87,12 +93,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
   },
-  name: {
-    fontSize: 22,
-    fontWeight: '800', // Premium Bold
-    color: Colors.secondary,
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 10,
     marginBottom: 4,
+  },
+  name: {
+    fontSize: 22,
+    fontWeight: '800', 
+    color: Colors.secondary,
   },
   email: {
     fontSize: 14,

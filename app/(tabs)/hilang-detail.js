@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
 
 const { height } = Dimensions.get('window');
 
@@ -11,25 +12,30 @@ export default function HilangDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   
-  let cat = { name: "Unknown" };
+  let cat = { name: "Unknown", description: "" };
   if (params.catData) {
     cat = JSON.parse(params.catData);
   }
 
   const handleContact = () => {
-      // Simulate WhatsApp or Phone Call
-      Alert.alert("Hubungi Pemilik", `Hubungi ${cat.contacts || 'Pemilik'}?`, [
-          { text: "Batal", style: 'cancel' },
-          { text: "Telepon / WA", onPress: () => console.log('Calling...') }
-      ]);
+       // Direct to Chat Room
+       const roomId = `room-${cat.id}-${Date.now()}`; // Simulated unique room ID
+       router.push({
+           pathname: '/chat-room',
+           params: { 
+               roomId: roomId,
+               context: `Laporan Hilang: ${cat.name}`
+           }
+       });
   };
 
   const handleFound = () => {
     Alert.alert("Lapor Ditemukan", "Apakah kamu melihat kucing ini?", [
         { text: "Belum", style: 'cancel' },
-        { text: "Ya, Saya Melihatnya", onPress: () => {
-            Alert.alert("Terima Kasih!", "Laporanmu sangat berharga. Silakan hubungi pemilik untuk koordinasi.");
-        }}
+        { 
+            text: "Ya, Saya Melihatnya", 
+            onPress: () => router.push({ pathname: '/add-hilang', params: { type: 'found' } })
+        }
     ]);
   };
 
@@ -64,17 +70,32 @@ export default function HilangDetailScreen() {
                         <Text style={styles.value}>{cat.location}</Text>
                     </View>
                 </View>
+                
+                {/* Map Placeholder */}
+                <View style={styles.mapPlaceholder}>
+                    <Ionicons name="map" size={32} color="#CCC" />
+                    <Text style={styles.mapText}>Peta Lokasi Terakhir</Text>
+                </View>
+
                 <View style={styles.divider} />
                 <View style={styles.infoRow}>
                     <Ionicons name="call" size={20} color={Colors.secondary} />
                     <View style={{ flex: 1 }}>
                         <Text style={styles.label}>Kontak Pemilik</Text>
-                        <Text style={styles.value}>{cat.contacts || "0812-XXXX-XXXX"}</Text>
+                        <Text style={styles.value}>{cat.contacts || "Chat melalui aplikasi"}</Text>
                     </View>
                 </View>
             </View>
 
             <Text style={styles.sectionTitle}>Ciri-Ciri Utama</Text>
+            
+            {/* Badges for Special traits */}
+            <View style={styles.badgeRow}>
+                <Badge text="Warna: Putih" variant="default" />
+                <Badge text="Ekor Panjang" variant="default" />
+                <Badge text="Kalung Merah" variant="error" />
+            </View>
+
             <Text style={styles.description}>
                 {cat.description || "Tidak ada deskripsi."}
             </Text>
@@ -89,7 +110,7 @@ export default function HilangDetailScreen() {
             style={{ marginBottom: 10, backgroundColor: Colors.error }} 
         />
         <Button 
-            title="Hubungi Pemilik" 
+            title="Hubungi Pemilik (Chat)" 
             variant="outline" 
             onPress={handleContact} 
         />
@@ -200,6 +221,7 @@ const styles = StyleSheet.create({
       fontSize: 15,
       color: '#444',
       lineHeight: 24,
+      marginTop: 10,
   },
   bottomBar: {
       position: 'absolute',
@@ -209,5 +231,27 @@ const styles = StyleSheet.create({
       backgroundColor: Colors.white,
       borderTopWidth: 1,
       borderTopColor: '#F0F0F0',
+  },
+  badgeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 10,
+  },
+  mapPlaceholder: {
+      height: 120,
+      backgroundColor: 'white',
+      borderRadius: 12,
+      marginTop: 15,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#FFCDD2',
+      borderStyle: 'dashed',
+  },
+  mapText: {
+      fontSize: 12,
+      color: '#888',
+      marginTop: 5,
   }
 });

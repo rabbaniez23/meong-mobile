@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, SafeAreaView, Alert, Text, TouchableOpacity, Image, Modal, Animated, FlatList } from 'react-native';
+import { View, StyleSheet, ScrollView, SafeAreaView, Alert, Text, TouchableOpacity, Image, Modal, Animated, FlatList, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,8 +9,16 @@ import StatsOverview from '../../components/Profile/StatsOverview';
 import ActivityTabs from '../../components/Profile/ActivityTabs';
 import HistoryList from '../../components/Profile/HistoryList';
 import LostCatCard from '../../components/LostCatCard';
+import ListingCard from '../../components/ListingCard'; // Re-use Listing Card for "My Adoption Posts"
 
-// MOCK USER DATA
+// Enable LayoutAnimation for Android
+if (Platform.OS === 'android') {
+  if (UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}
+
+// --- MOCK USER DATA ---
 const USER_DATA = {
   name: "Rizki Rabbani",
   email: "rizki.r@upi.edu",
@@ -20,6 +28,8 @@ const USER_DATA = {
   age: 24,
   location: "Bandung, ID",
   joinDate: "Jan 2024",
+  status: "Verified Account", // NEW
+  motivation: "Mewujudkan dunia yang ramah bagi setiap ekor.", // NEW
   stats: {
     adoptions: 2,
     reports: 3,
@@ -27,25 +37,47 @@ const USER_DATA = {
   }
 };
 
-// INITIAL DATA
+// --- INITIAL DATA ---
 const INITIAL_ADOPTION_HISTORY = [
     { id: '1', catName: 'Miko', date: '10 Jan 2025', catBreed: 'Domestik', status: 'Approved', image: require('../../assets/Miko.jpeg') },
     { id: '2', catName: 'Oyen', date: '05 Des 2024', catBreed: 'Orange', status: 'Rejected', image: require('../../assets/Oyen.jpeg') },
 ];
 
-const INITIAL_REPORTS = [
-    { id: '1', name: 'Mochi', lastSeen: 'Kemarin Sore', location: 'Jl. Dago', image: require('../../assets/Putih.jpeg'), status: 'Dicari' },
-    { id: '2', name: 'Tom', lastSeen: '1 Minggu lalu', location: 'Gasibu', image: require('../../assets/Abu.jpeg'), status: 'Ditemukan' },
+const INITIAL_REPORTS = [ // (Lost Cats)
+    { id: '1', name: 'Mochi', lastSeen: 'Kemarin Sore', location: 'Jl. Dago', image: require('../../assets/Putih.jpeg'), status: 'Dicari', distance: '0.5' },
+    { id: '2', name: 'Tom', lastSeen: '1 Minggu lalu', location: 'Gasibu', image: require('../../assets/Abu.jpeg'), status: 'Ditemukan', distance: '2.0' },
+];
+
+const INITIAL_ADOPTION_POSTS = [ // NEW (My Adoption Listings)
+    { id: '1', name: 'Hattoo', breed: 'Domestik', age: '1 Thn', gender: 'Jantan', image: require('../../assets/Hatto.jpeg'), status: 'available' },
+    { id: '2', name: 'Luna', breed: 'Siam', age: '4 Bln', gender: 'Betina', image: require('../../assets/Abu.jpeg'), status: 'adopted' },
 ];
 
 const INITIAL_REQUESTS = [
     { 
-        id: '1', requester: 'Budi Santoso', catName: 'Hattoo', date: 'Baru saja', message: 'Saya berminat adopsi Hatto.', 
-        details: { job: 'Wiraswasta', age: 29, location: 'Cimahi', history: 'Pernah adopsi 2 kucing.', houseType: 'Rumah Pribadi' }
+        id: '1', requester: 'Budi Santoso', catName: 'Hattoo', date: 'Baru saja', message: 'Saya berminat adopsi Hatto. Rumah saya sudah ada pagar.', 
+        details: { 
+            job: 'Wiraswasta', age: 29, location: 'Cimahi', 
+            // Enhanced Questionnaire Data
+            questionnaire: {
+                experience: true,
+                fence: true,
+                vaccineCommitment: true,
+                indoor: true
+            }
+        }
     },
     { 
-        id: '2', requester: 'Siti Aminah', catName: 'Oyen', date: '2 Jam lalu', message: 'Apakah Oyen bisa diantar?', 
-        details: { job: 'Dokter', age: 31, location: 'Setiabudi', history: 'Punya 1 Anjing.', houseType: 'Apartemen' }
+        id: '2', requester: 'Siti Aminah', catName: 'Oyen', date: '2 Jam lalu', message: 'Apakah Oyen bisa diantar? Saya mau adopt.', 
+        details: { 
+            job: 'Dokter', age: 31, location: 'Setiabudi',
+            questionnaire: {
+                experience: true,
+                fence: false, // Warning
+                vaccineCommitment: true,
+                indoor: false
+            }
+        }
     }
 ];
 
@@ -54,18 +86,17 @@ const DONATION_HISTORY = [
     { id: '2', amount: '100.000', date: '15 Nov 2024', campaign: 'Pengobatan Muezza', status: 'Berhasil' },
 ];
 
-// MOCK REPORT RESPONSES
-const REPORT_RESPONSES = [
-    { id: '1', reporterName: 'Asep Supriatna', avatar: null, message: 'Saya lihat kucing ini di dekat Warung Steak Dago.', time: '10 Menit lalu' },
-];
-
 export default function ProfilScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Riwayat Adopsi');
   
-  // State for Lists (to allow removal)
+  // State for Lists
   const [requests, setRequests] = useState(INITIAL_REQUESTS);
+  
+  // Post Management State
   const [reports, setReports] = useState(INITIAL_REPORTS);
+  const [adoptionPosts, setAdoptionPosts] = useState(INITIAL_ADOPTION_POSTS);
+  const [myPostFilter, setMyPostFilter] = useState('lost'); // 'lost' or 'adoption'
   
   // Animation
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -93,30 +124,23 @@ export default function ProfilScreen() {
       setRequestModalVisible(true);
   };
 
+  const removeRequest = (id) => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setRequests(prev => prev.filter(r => r.id !== id));
+      setRequestModalVisible(false);
+  };
+
   const handleRejectRequest = (id) => {
       Alert.alert("Tolak Permintaan", "Yakin ingin menolak permintaan ini?", [
           { text: "Batal", style: "cancel" },
-          { 
-            text: "Tolak", 
-            onPress: () => {
-                setRequests(prev => prev.filter(r => r.id !== id));
-                setRequestModalVisible(false);
-            },
-            style: 'destructive'
-          }
+          { text: "Tolak", onPress: () => removeRequest(id), style: 'destructive' }
       ]);
   };
 
   const handleApproveRequest = (id) => {
       Alert.alert("Terima Permintaan", "Anda akan menerima permintaan ini. Kucing akan ditandai sebagai 'Diadopsi'.", [
           { text: "Batal", style: "cancel" },
-          { 
-            text: "Terima", 
-            onPress: () => {
-                setRequests(prev => prev.filter(r => r.id !== id)); // Remove from list
-                setRequestModalVisible(false); // Close modal
-            } 
-          }
+          { text: "Terima", onPress: () => removeRequest(id) }
       ]);
   };
 
@@ -127,22 +151,50 @@ export default function ProfilScreen() {
   };
 
   const handleMarkFound = (id) => {
-      Alert.alert("Kucing Ditemukan!", "Apakah kucing ini sudah benar-benar kembali? Laporan akan dihapus dari daftar pencarian.", [
+      Alert.alert("Kucing Ditemukan!", "Laporan akan dihapus dari daftar pencarian.", [
           { text: "Belum", style: "cancel" },
           { 
               text: "Ya, Ditemukan", 
               onPress: () => {
-                  setReports(prev => prev.filter(r => r.id !== id)); // Remove from list
-                  setReportModalVisible(false); // Close modal
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setReports(prev => prev.filter(r => r.id !== id));
+                  setReportModalVisible(false);
               }
           }
       ]);
   };
 
-  const handleChat = (userName) => {
+  const handleMarkAdopted = (id) => {
+      Alert.alert("Tandai Teradopsi", "Ubah status menjadi teradopsi?", [
+           { text: "Batal", style: "cancel" },
+           { text: "Ya", onPress: () => console.log("Marking adpoted " + id) }
+      ]);
+  };
+
+  // --- CHAT LOGIC ---
+  const handleChat = (userName, catName, type) => {
       setRequestModalVisible(false);
       setReportModalVisible(false);
-      router.push({ pathname: '/chat-room', params: { userName } });
+      
+      const contextString = type === 'adoption' 
+        ? `Pengajuan Adopsi: ${catName}` 
+        : `Laporan Penemuan: ${catName}`;
+      
+      const initialMsg = type === 'adoption'
+        ? `Halo ${userName}, saya ingin mendiskusikan pengajuan adopsi untuk ${catName}.`
+        : `Halo ${userName}, terima kasih atas info mengenai ${catName}.`;
+
+      const roomId = `room-${userName}-${Date.now()}`;
+
+      router.push({ 
+          pathname: '/chat-room', 
+          params: { 
+              roomId,
+              userName, 
+              context: contextString,
+              initialMessage: initialMsg 
+          } 
+      });
   };
 
   return (
@@ -196,32 +248,84 @@ export default function ProfilScreen() {
                  </View>
             )}
 
-            {/* 3. Laporan Saya */}
-            {activeTab === 'Laporan Saya' && (
+            {/* 3. Postingan Saya (Renamed from Laporan Saya) */}
+            {activeTab === 'Postingan Saya' && (
                 <View style={styles.tabContent}>
-                    <Text style={styles.sectionTitle}>Laporan Kehilangan</Text>
-                    {reports.length === 0 ? (
-                        <Text style={styles.emptyText}>Tidak ada laporan aktif.</Text>
+                    {/* Sub Filter Chips */}
+                    <View style={styles.postFilterContainer}>
+                        <TouchableOpacity 
+                            style={[styles.filterChip, myPostFilter === 'lost' && styles.filterChipActive]}
+                            onPress={() => setMyPostFilter('lost')}
+                        >
+                            <Text style={[styles.filterText, myPostFilter === 'lost' && styles.filterTextActive]}>Kehilangan</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style={[styles.filterChip, myPostFilter === 'adoption' && styles.filterChipActive]}
+                            onPress={() => setMyPostFilter('adoption')}
+                        >
+                            <Text style={[styles.filterText, myPostFilter === 'adoption' && styles.filterTextActive]}>Tawaran Adopsi</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {myPostFilter === 'lost' ? (
+                        // LOST POSTS LIST
+                        reports.length === 0 ? (
+                             <Text style={styles.emptyText}>Tidak ada laporan aktif.</Text>
+                        ) : (
+                             reports.map((report) => (
+                                <View key={report.id} style={{ marginBottom: 15 }}>
+                                    <LostCatCard 
+                                        name={report.name}
+                                        lastSeen={report.lastSeen}
+                                        location={report.location}
+                                        image={report.image}
+                                        distance={report.distance}
+                                        onPress={() => showReportDetails(report)} 
+                                    />
+                                    {/* Action Buttons */}
+                                    <View style={styles.cardActionRow}>
+                                        <TouchableOpacity style={styles.actionBtnOutline}>
+                                            <Ionicons name="create-outline" size={16} color={Colors.text} />
+                                            <Text style={styles.actionBtnText}>Edit</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity 
+                                            style={[styles.actionBtnFilled, { backgroundColor: Colors.error }]}
+                                            onPress={() => handleMarkFound(report.id)}
+                                        >
+                                            <Ionicons name="checkmark-done" size={16} color="white" />
+                                            <Text style={[styles.actionBtnText, { color: 'white' }]}>Selesai</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))
+                        )
                     ) : (
-                         reports.map((report) => (
-                            <View key={report.id} style={{ marginBottom: 15 }}>
-                                <LostCatCard 
-                                    name={report.name}
-                                    lastSeen={report.lastSeen}
-                                    location={report.location}
-                                    image={report.image}
-                                    onPress={() => showReportDetails(report)} 
-                                />
-                                {/* Quick Action Button for Found */}
-                                <TouchableOpacity 
-                                    style={styles.markFoundBtnSmall}
-                                    onPress={() => handleMarkFound(report.id)}
-                                >
-                                    <Ionicons name="checkmark-circle-outline" size={16} color={Colors.white} />
-                                    <Text style={styles.markFoundTextSmall}>Tandai Ditemukan</Text>
-                                </TouchableOpacity>
+                        // ADOPTION POSTS LIST
+                        adoptionPosts.length === 0 ? (
+                            <Text style={styles.emptyText}>Belum ada postingan adopsi.</Text>
+                        ) : (
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                                {adoptionPosts.map((post) => (
+                                    <View key={post.id} style={{ width: '48%', marginBottom: 15 }}>
+                                        <ListingCard 
+                                            name={post.name}
+                                            breed={post.breed}
+                                            age={post.age}
+                                            gender={post.gender}
+                                            image={post.image}
+                                            status={post.status}
+                                            onPress={() => Alert.alert("Detail", "Edit atau hapus postingan ini.")}
+                                        />
+                                        <TouchableOpacity 
+                                            style={styles.miniEditBtn}
+                                            onPress={() => handleMarkAdopted(post.id)}
+                                        >
+                                            <Ionicons name="ellipsis-horizontal" size={16} color="#555" />
+                                        </TouchableOpacity>
+                                    </View>
+                                ))}
                             </View>
-                        ))
+                        )
                     )}
                 </View>
             )}
@@ -241,7 +345,7 @@ export default function ProfilScreen() {
 
       </Animated.ScrollView>
 
-      {/* --- MODAL 1: PERMINTAAN DETAILS (3 Buttons) --- */}
+      {/* --- MODAL 1: PERMINTAAN DETAILS (Selection Criteria) --- */}
       <Modal animationType="slide" transparent={true} visible={requestModalVisible} onRequestClose={() => setRequestModalVisible(false)}>
         <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -253,26 +357,53 @@ export default function ProfilScreen() {
                            <Text style={styles.profileName}>{selectedRequest.requester}</Text>
                            <Text style={styles.profileRole}>Calon Adopter</Text>
                         </View>
+                        
+                        {/* 1. Basic Info */}
                         <InfoSection title="Informasi Personal">
                             <InfoItem label="Pekerjaan" value={selectedRequest.details.job} />
                             <InfoItem label="Usia" value={selectedRequest.details.age} />
                             <InfoItem label="Lokasi" value={selectedRequest.details.location} />
                         </InfoSection>
+
+                        {/* 2. Questionnaire Results (NEW) */}
+                        {selectedRequest.details.questionnaire && (
+                            <InfoSection title="Hasil Kuisioner Adopsi">
+                                <QuestionnaireItem 
+                                    label="Pengalaman" 
+                                    isYes={selectedRequest.details.questionnaire.experience} 
+                                />
+                                <QuestionnaireItem 
+                                    label="Rumah Berpagar" 
+                                    isYes={selectedRequest.details.questionnaire.fence} 
+                                />
+                                <QuestionnaireItem 
+                                    label="Komitmen Vaksin" 
+                                    isYes={selectedRequest.details.questionnaire.vaccineCommitment} 
+                                />
+                                <QuestionnaireItem 
+                                    label="Indoor Only" 
+                                    isYes={selectedRequest.details.questionnaire.indoor} 
+                                />
+                            </InfoSection>
+                        )}
                         
                         <View style={styles.threeBtnRow}>
-                             {/* 1. TOLAK */}
+                             {/* TOLAK */}
                              <TouchableOpacity style={[styles.btnAction, { backgroundColor: '#FFEBEE' }]} onPress={() => handleRejectRequest(selectedRequest.id)}>
                                 <Ionicons name="close-circle-outline" size={20} color={Colors.error} />
                                 <Text style={{ color: Colors.error, fontSize: 10, fontWeight: 'bold' }}>Tolak</Text>
                              </TouchableOpacity>
 
-                              {/* 2. CHAT */}
-                             <TouchableOpacity style={[styles.btnAction, { backgroundColor: '#E3F2FD' }]} onPress={() => handleChat(selectedRequest.requester)}>
+                              {/* CHAT */}
+                             <TouchableOpacity 
+                                style={[styles.btnAction, { backgroundColor: '#E3F2FD' }]} 
+                                onPress={() => handleChat(selectedRequest.requester, selectedRequest.catName, 'adoption')}
+                             >
                                 <Ionicons name="chatbubbles-outline" size={20} color="#1976D2" />
                                 <Text style={{ color: '#1976D2', fontSize: 10, fontWeight: 'bold' }}>Chat</Text>
                              </TouchableOpacity>
 
-                              {/* 3. TERIMA */}
+                              {/* TERIMA */}
                              <TouchableOpacity style={[styles.btnAction, { backgroundColor: '#E8F5E9' }]} onPress={() => handleApproveRequest(selectedRequest.id)}>
                                 <Ionicons name="checkmark-circle-outline" size={20} color={Colors.secondary} />
                                 <Text style={{ color: Colors.secondary, fontSize: 10, fontWeight: 'bold' }}>Terima</Text>
@@ -284,7 +415,7 @@ export default function ProfilScreen() {
         </View>
       </Modal>
 
-      {/* --- MODAL 2: LAPORAN DETAILS + Mark Found --- */}
+      {/* --- MODAL 2: LAPORAN DETAILS --- */}
       <Modal animationType="slide" transparent={true} visible={reportModalVisible} onRequestClose={() => setReportModalVisible(false)}>
         <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -295,31 +426,9 @@ export default function ProfilScreen() {
                     <Text style={styles.markFoundTextLarge}>Tandai Sudah Ditemukan</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.modalSubtitle}>Respon dari Komunitas</Text>
-                {REPORT_RESPONSES.length > 0 ? (
-                    <FlatList 
-                        data={REPORT_RESPONSES}
-                        keyExtractor={item => item.id}
-                        renderItem={({ item }) => (
-                            <View style={styles.responseCard}>
-                                <View style={styles.responseHeader}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={styles.avatarMini} />
-                                        <Text style={styles.responseName}>{item.reporterName}</Text>
-                                    </View>
-                                    <Text style={styles.responseTime}>{item.time}</Text>
-                                </View>
-                                <Text style={styles.responseText}>"{item.message}"</Text>
-                                <TouchableOpacity style={styles.chatBtnSmall} onPress={() => handleChat(item.reporterName)}>
-                                    <Ionicons name="chatbubble-ellipses-outline" size={16} color={Colors.white} />
-                                    <Text style={styles.chatBtnText}>Chat</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    />
-                ) : (
-                    <Text style={{ color: '#999', padding: 20, textAlign: 'center' }}>Belum ada respon.</Text>
-                )}
+                <Text style={styles.modalSubtitle}>Respon masuk:</Text>
+                <Text style={{ color: '#999', padding: 20, textAlign: 'center' }}>Belum ada respon.</Text>
+            
             </View>
         </View>
       </Modal>
@@ -353,6 +462,22 @@ const InfoItem = ({ label, value }) => (
     </View>
 );
 
+const QuestionnaireItem = ({ label, isYes }) => (
+    <View style={styles.infoItem}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+            <Ionicons 
+                name={isYes ? "checkmark-circle" : "close-circle"} 
+                size={16} 
+                color={isYes ? Colors.primary : Colors.error} 
+            />
+            <Text style={{ fontWeight: 'bold', color: isYes ? Colors.primary : Colors.error }}>
+                {isYes ? "Ya" : "Tidak"}
+            </Text>
+        </View>
+    </View>
+);
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, paddingTop: 30 },
   scrollContent: { padding: 20, paddingBottom: 50 },
@@ -366,6 +491,32 @@ const styles = StyleSheet.create({
   },
   emptyText: { textAlign: 'center', color: '#888', fontStyle: 'italic', marginTop: 20 },
 
+  // Post Filter (Chips)
+  postFilterContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 20, gap: 10 },
+  filterChip: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, backgroundColor: '#E0E0E0' },
+  filterChipActive: { backgroundColor: Colors.primary },
+  filterText: { color: '#666', fontWeight: 'bold', fontSize: 12 },
+  filterTextActive: { color: 'white' },
+
+  // Action Buttons for My Posts
+  cardActionRow: { 
+      flexDirection: 'row', justifyContent: 'flex-end', marginTop: -10, marginBottom: 15, 
+      backgroundColor: 'white', padding: 10, borderRadius: 12, ...Colors.shadow, gap: 10 
+  },
+  actionBtnOutline: { 
+      paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, borderWidth: 1, borderColor: '#DDD', 
+      flexDirection: 'row', alignItems: 'center', gap: 5 
+  },
+  actionBtnFilled: { 
+      paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8, 
+      flexDirection: 'row', alignItems: 'center', gap: 5 
+  },
+  actionBtnText: { fontSize: 12, fontWeight: 'bold', color: '#333' },
+  miniEditBtn: {
+      position: 'absolute', top: 10, right: 10, width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.8)',
+      justifyContent: 'center', alignItems: 'center'
+  },
+
   // Cards
   card: { backgroundColor: Colors.white, padding: 16, borderRadius: 16, marginBottom: 12, ...Colors.shadow },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
@@ -376,13 +527,6 @@ const styles = StyleSheet.create({
   cardBody: { fontSize: 13, color: '#555', marginBottom: 10, fontStyle: 'italic' },
   actionRow: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 4 },
   linkText: { fontSize: 12, color: Colors.secondary, fontWeight: 'bold' },
-
-  // Mark Found Button (Small)
-  markFoundBtnSmall: {
-      backgroundColor: Colors.secondary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-      padding: 8, borderRadius: 8, marginTop: -10, marginBottom: 15, marginHorizontal: 4
-  },
-  markFoundTextSmall: { color: Colors.white, fontWeight: 'bold', fontSize: 12, marginLeft: 6 },
 
   // Mark Found Button (Large)
   markFoundBtnLarge: {
@@ -417,17 +561,7 @@ const styles = StyleSheet.create({
       gap: 4
   },
 
-  // Report Responses
   modalSubtitle: { fontSize: 14, fontWeight: '600', color: '#666', marginBottom: 10 },
-  responseCard: { backgroundColor: '#F5F5F5', padding: 12, borderRadius: 12, marginBottom: 10 },
-  responseHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  avatarMini: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#CCC', marginRight: 8 },
-  responseName: { fontWeight: 'bold', fontSize: 13, color: Colors.text },
-  responseTime: { fontSize: 10, color: '#999' },
-  responseText: { fontSize: 13, color: '#444', marginBottom: 10 },
-  chatBtnSmall: { backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, alignSelf: 'flex-start', gap: 6 },
-  chatBtnText: { color: Colors.white, fontSize: 12, fontWeight: 'bold' },
-
   logoutBtn: { marginTop: 10, alignItems: 'center', padding: 15 },
   logoutText: { color: Colors.error, fontWeight: 'bold' },
 });
