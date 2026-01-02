@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import CustomHeader from '../../components/CustomHeader';
 
-// Data Dummy Rumah Sakit & Shelter (Menggunakan aset yang kamu punya)
+// Data Dummy Rumah Sakit & Shelter
 const DONATION_TARGETS = [
   { 
     id: '1', 
@@ -50,7 +51,16 @@ const DONATION_TARGETS = [
 
 export default function DonasiScreen() {
   const router = useRouter();
-  const [filter, setFilter] = useState('Semua'); // Filter sederhana
+  const [filter, setFilter] = useState('Semua'); 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   // Filter Data
   const filteredData = filter === 'Semua' 
@@ -100,45 +110,51 @@ export default function DonasiScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Donasi & Bantuan 🤝</Text>
-        <Text style={styles.subtitle}>Salurkan bantuanmu ke tempat terpercaya</Text>
-      </View>
+        <CustomHeader 
+            title="Donasi" 
+            leftIcon="chatbubbles-outline"
+            onLeftPress={() => router.push('/chat-list')}
+            rightIcon="notifications-outline"
+            onRightPress={() => router.push('/notifications')}
+        />
 
-      {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        {['Semua', 'Shelter', 'Rumah Sakit'].map((f) => (
-          <TouchableOpacity 
-            key={f} 
-            style={[styles.filterBtn, filter === f && styles.filterBtnActive]}
-            onPress={() => setFilter(f)}
-          >
-            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        {/* Filter Tabs */}
+        <View style={styles.filterContainer}>
+          {['Semua', 'Shelter', 'Rumah Sakit'].map((f) => (
+            <TouchableOpacity 
+              key={f} 
+              style={[styles.filterBtn, filter === f && styles.filterBtnActive]}
+              onPress={() => setFilter(f)}
+            >
+              <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      <FlatList
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlatList
+          data={filteredData}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  header: { padding: 20, paddingTop: 50, backgroundColor: Colors.white, borderBottomRightRadius: 20, borderBottomLeftRadius: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', color: Colors.secondary },
-  subtitle: { fontSize: 14, color: '#666', marginTop: 5 },
-  
+  container: { 
+    flex: 1, 
+    backgroundColor: Colors.white,
+  },
+  content: {
+    flex: 1,
+  },
   filterContainer: { flexDirection: 'row', paddingHorizontal: 20, marginTop: 15, marginBottom: 10, gap: 10 },
   filterBtn: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, backgroundColor: Colors.white, borderWidth: 1, borderColor: '#DDD' },
-  filterBtnActive: { backgroundColor: Colors.secondary, borderColor: Colors.secondary },
+  filterBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   filterText: { color: '#666', fontWeight: '600' },
   filterTextActive: { color: Colors.white },
 

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Text, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Input from '../../components/ui/Input';
 import ListingCard from '../../components/ListingCard';
 import FilterBar from '../../components/FilterBar';
+import CustomHeader from '../../components/CustomHeader';
 
 // Expanded Dummy Data
 const ADOPTION_DATA = [
@@ -21,6 +22,15 @@ export default function AdopsiScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const filteredData = ADOPTION_DATA.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -28,7 +38,7 @@ export default function AdopsiScreen() {
     
     // Filter Logic
     if (filter === 'Semua') return matchesSearch;
-    if (filter === 'Kitten') return matchesSearch && item.age.includes('Bln'); // Simple heuristic
+    if (filter === 'Kitten') return matchesSearch && item.age.includes('Bln');
     if (filter === 'Jantan' || filter === 'Betina') return matchesSearch && item.gender === filter;
     
     return matchesSearch;
@@ -53,19 +63,16 @@ export default function AdopsiScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {/* Custom Header */}
-        <View style={styles.header}>
-            <View>
-                <Text style={styles.title}>Teman Baru</Text>
-                <Text style={styles.subtitle}>Menunggumu untuk diadopsi</Text>
-            </View>
-            <TouchableOpacity style={styles.iconBtn}>
-                <Ionicons name="notifications-outline" size={24} color={Colors.text} />
-            </TouchableOpacity>
-        </View>
+    <View style={styles.container}>
+        <CustomHeader 
+            title="Adopsi" 
+            leftIcon="chatbubbles-outline"
+            onLeftPress={() => router.push('/chat-list')}
+            rightIcon="notifications-outline"
+            onRightPress={() => router.push('/notifications')}
+        />
 
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <View style={styles.searchContainer}>
             <View style={styles.searchWrapper}>
                 <Input 
@@ -73,7 +80,7 @@ export default function AdopsiScreen() {
                     icon="search" 
                     value={search}
                     onChangeText={setSearch}
-                    style={{ borderWidth: 0, backgroundColor: 'transparent' }} // Remove Input default styles
+                    style={{ borderWidth: 0, backgroundColor: 'transparent' }} 
                 />
             </View>
         </View>
@@ -95,7 +102,7 @@ export default function AdopsiScreen() {
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
         />
-      </View>
+      </Animated.View>
 
       {/* FAB */}
       <TouchableOpacity 
@@ -105,53 +112,22 @@ export default function AdopsiScreen() {
       >
         <Ionicons name="add" size={32} color={Colors.white} />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-    paddingTop: 30, 
+    backgroundColor: Colors.white,
   },
   content: {
     flex: 1,
-  },
-  header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      marginBottom: 20,
-  },
-  title: {
-      fontSize: 28,
-      fontWeight: '800', 
-      color: Colors.secondary,
-      letterSpacing: -0.5,
-  },
-  subtitle: {
-      fontSize: 14,
-      color: '#888',
-      marginTop: 2,
-  },
-  iconBtn: {
-      backgroundColor: Colors.white,
-      padding: 10,
-      borderRadius: 12,
-      ...Colors.shadow,
+    paddingTop: 10,
   },
   searchContainer: {
       paddingHorizontal: 20,
       marginBottom: 5, 
-  },
-  searchWrapper: {
-      backgroundColor: Colors.white,
-      borderRadius: 16,
-      ...Colors.shadow,
-      paddingVertical: 2, // Fine tune
-      marginBottom: 10,
   },
   listContainer: {
       paddingHorizontal: 20,

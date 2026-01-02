@@ -1,30 +1,40 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, Dimensions, TouchableOpacity, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
 
 const { width, height } = Dimensions.get('window');
 
 export default function AdopsiDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [reason, setReason] = useState('');
   
   let cat = { name: "Unknown" };
   if (params.catData) {
     cat = JSON.parse(params.catData);
   }
 
-  const handleAdopt = () => {
-    Alert.alert("Ajukan Adopsi", `Apakah kamu yakin ingin mengadopsi ${cat.name}?`, [
-        { text: "Batal", style: 'cancel' },
-        { text: "Ya, Ajukan", onPress: () => {
-            Alert.alert("Berhasil", "Pengajuan adopsi terkirim! Pemilik akan menghubungimu.");
-            router.back();
-        }}
-    ]);
+  const handleSubmitAdoption = () => {
+      if (!reason.trim()) {
+          Alert.alert("Mohon isi alasan", "Tuliskan alasan singkat mengapa Anda ingin mengadopsi.");
+          return;
+      }
+      
+      setModalVisible(false);
+      
+      // Simulate sending to profile (Backend logic would go here)
+      // For now, simple Alert success
+      setTimeout(() => {
+          Alert.alert(
+            "Berhasil Diajukan!", 
+            `Pengajuan untuk ${cat.name} telah dikirim ke pemilik. Cek status di Profil Anda nanti.`,
+            [{ text: "OK", onPress: () => router.back() }]
+          );
+      }, 500);
   };
 
   return (
@@ -36,7 +46,6 @@ export default function AdopsiDetailScreen() {
             <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
                 <Ionicons name="arrow-back" size={24} color={Colors.white} />
             </TouchableOpacity>
-            <View style={styles.gradient} />
         </View>
 
         {/* Content Details */}
@@ -85,14 +94,50 @@ export default function AdopsiDetailScreen() {
             <Text style={styles.description}>
                 {cat.description || "Kucing ini sangat lucu dan butuh rumah baru. Dia suka bermain bola dan tidur di pangkuan. Sangat ramah dengan anak-anak dan kucing lain."}
             </Text>
-
         </View>
       </ScrollView>
 
       {/* Floating Bottom Bar */}
       <View style={styles.bottomBar}>
-        <Button title="Ajukan Adopsi" style={{ width: '100%' }} onPress={handleAdopt} />
+        <Button title="Ajukan Adopsi" style={{ width: '100%' }} onPress={() => setModalVisible(true)} />
       </View>
+
+      {/* ADOPTION FORM MODAL */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.modalOverlay}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.modalContent}>
+                    <View style={styles.modalHeader}>
+                        <Text style={styles.modalTitle}>Form Pengajuan</Text>
+                        <TouchableOpacity onPress={() => setModalVisible(false)}>
+                            <Ionicons name="close" size={24} color="#333" />
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <Text style={styles.label}>Mengapa ingin mengadopsi {cat.name}?</Text>
+                    <TextInput 
+                        style={styles.textArea}
+                        placeholder="Contoh: Saya punya pengalaman merawat kucing dan memiliki rumah yang cukup luas..."
+                        multiline
+                        numberOfLines={4}
+                        value={reason}
+                        onChangeText={setReason}
+                    />
+
+                    <Button title="Kirim Pengajuan" onPress={handleSubmitAdoption} style={{ marginTop: 20 }} />
+                </View>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </View>
   );
 }
@@ -247,5 +292,45 @@ const styles = StyleSheet.create({
       backgroundColor: Colors.white,
       borderTopWidth: 1,
       borderTopColor: '#F0F0F0',
+  },
+  // MODAL STYLES
+  modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'flex-end',
+  },
+  modalContent: {
+      backgroundColor: Colors.white,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      paddingBottom: 40,
+  },
+  modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
+  },
+  modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: Colors.text,
+  },
+  label: {
+      fontSize: 14,
+      color: '#666',
+      marginBottom: 10,
+  },
+  textArea: {
+      backgroundColor: '#F9F9F9',
+      borderRadius: 12,
+      padding: 15,
+      minHeight: 100,
+      textAlignVertical: 'top',
+      fontSize: 14,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: '#EEE',
   }
 });

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,13 +8,22 @@ export default function ThreadCard({
   time, 
   content, 
   image, 
-  likes, 
-  comments, 
-  category, // New Prop
-  onPress 
+  likes = 0, 
+  comments = 0, 
+  category, 
+  onCommentPress, // Specific handler for Comment
+  onSharePress,   // Specific handler for Share
 }) {
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(likes);
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+  };
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <View style={styles.container}>
       {/* Left Column: Avatar */}
       <View style={styles.leftCol}>
         <Image 
@@ -50,35 +59,35 @@ export default function ThreadCard({
 
         {/* Action Bar */}
         <View style={styles.actionBar}>
-            <TouchableOpacity style={styles.actionBtn}>
-                <Ionicons name="chatbubble-outline" size={18} color="#888" />
+            {/* 1. Comment Button */}
+            <TouchableOpacity style={styles.actionBtn} onPress={onCommentPress}>
+                <Ionicons name="chatbubble-outline" size={20} color="#888" />
                 <Text style={styles.actionText}>{comments}</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.actionBtn}>
-                <Ionicons name="repeat-outline" size={18} color="#888" />
+            {/* 2. Like Button */}
+            <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
+                <Ionicons 
+                  name={isLiked ? "heart" : "heart-outline"} 
+                  size={20} 
+                  color={isLiked ? Colors.error : "#888"} 
+                />
+                <Text style={[styles.actionText, isLiked && { color: Colors.error }]}>
+                  {likeCount}
+                </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionBtn}>
-                <Ionicons name="heart-outline" size={18} color="#888" />
-                <Text style={styles.actionText}>{likes}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.actionBtn}>
-                <Ionicons name="share-social-outline" size={18} color="#888" />
+            {/* 3. Share Button - Retweet removed */}
+            <TouchableOpacity style={styles.actionBtn} onPress={onSharePress}>
+                <Ionicons name="share-social-outline" size={20} color="#888" />
             </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // ... Helper function for styles not standard in stylesheet but used in render
-  // We can't put function in StyleSheet, so we put it outside or use logic in render.
-  // For simplicity, let's just use conditional styles in render? 
-  // Actually, let's keep it simple.
-  
   container: {
     flexDirection: 'row',
     padding: 16,
@@ -127,13 +136,7 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: Colors.text,
       marginRight: 4,
-      maxWidth: 120, // Prevent name from pushing time off screen
-  },
-  username: {
-      fontSize: 14,
-      color: '#888',
-      marginRight: 4,
-      flex: 1, // Let username shrink if needed
+      maxWidth: 120, 
   },
   dot: {
       fontSize: 14,
@@ -162,12 +165,14 @@ const styles = StyleSheet.create({
   actionBar: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      maxWidth: '90%',
+      paddingRight: 40, // More concise spacing
+      marginTop: 5,
   },
   actionBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 6,
+      padding: 5, // Hit slop
   },
   actionText: {
       fontSize: 13,

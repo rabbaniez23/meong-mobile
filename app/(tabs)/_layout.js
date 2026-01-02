@@ -7,7 +7,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.secondary, // Ganti jadi secondary (Hijau Tua) biar lebih tegas
+        tabBarActiveTintColor: Colors.primary, // Ganti jadi secondary (Hijau Tua) biar lebih tegas
         tabBarInactiveTintColor: '#CDCDE0',
         tabBarStyle: {
           backgroundColor: Colors.white,
@@ -82,6 +82,7 @@ export default function TabLayout() {
       <Tabs.Screen name="adopsi-detail" options={{ href: null }} />
       <Tabs.Screen name="hilang-detail" options={{ href: null }} />
       <Tabs.Screen name="donasi-detail" options={{ href: null }} />
+      <Tabs.Screen name="komunitas-detail" options={{ href: null }} />
       <Tabs.Screen name="donasi-payment" options={{ href: null }} />
       <Tabs.Screen name="index" options={{ href: null }} /> 
     </Tabs>

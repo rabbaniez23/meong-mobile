@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Text, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, Text, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import Input from '../../components/ui/Input';
 import LostCatCard from '../../components/LostCatCard';
 import FilterBar from '../../components/FilterBar';
+import CustomHeader from '../../components/CustomHeader';
 
 // Expanded Dummy Data
 const LOST_DATA = [
@@ -40,6 +41,15 @@ export default function HilangScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Semua');
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const filteredData = LOST_DATA.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -47,8 +57,8 @@ export default function HilangScreen() {
     
     // Filter logic
     if (filter === 'Semua') return matchesSearch;
-    if (filter === 'Terbaru') return matchesSearch; // Should sort by date in real app
-    if (filter === 'Imbalan') return matchesSearch; // Should check if reward exists
+    if (filter === 'Terbaru') return matchesSearch; 
+    if (filter === 'Imbalan') return matchesSearch; 
 
     return matchesSearch;
   });
@@ -73,19 +83,16 @@ export default function HilangScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        {/* Custom Header */}
-        <View style={styles.header}>
-            <View>
-                <Text style={styles.title}>Info Kehilangan</Text>
-                <Text style={styles.subtitle}>Bantu pertemukan mereka kembali</Text>
-            </View>
-            <View style={styles.alertIcon}>
-                <Ionicons name="warning" size={24} color={Colors.error} />
-            </View>
-        </View>
+    <View style={styles.container}>
+        <CustomHeader 
+            title="Lapor Hilang" 
+            leftIcon="chatbubbles-outline"
+            onLeftPress={() => router.push('/chat-list')}
+            rightIcon="notifications-outline"
+            onRightPress={() => router.push('/notifications')}
+        />
 
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <View style={styles.searchContainer}>
             <View style={styles.searchWrapper}>
                 <Input 
@@ -113,7 +120,7 @@ export default function HilangScreen() {
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
         />
-      </View>
+      </Animated.View>
 
       {/* FAB */}
       <TouchableOpacity 
@@ -124,54 +131,22 @@ export default function HilangScreen() {
         <Ionicons name="megaphone" size={28} color={Colors.white} />
         <Text style={styles.fabText}>Lapor</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background, // Cream background
-    paddingTop: 30,
+    backgroundColor: Colors.white, 
   },
   content: {
     flex: 1,
-  },
-  header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      marginBottom: 20,
-  },
-  title: {
-      fontSize: 26,
-      fontWeight: '800',
-      color: Colors.error, 
-      letterSpacing: -0.5,
-  },
-  subtitle: {
-      fontSize: 14,
-      color: '#888',
-      marginTop: 2,
-  },
-  alertIcon: {
-      backgroundColor: '#FFEBEE',
-      padding: 10,
-      borderRadius: 12,
+    paddingTop: 10,
   },
   searchContainer: {
       paddingHorizontal: 20,
       marginBottom: 5,
-  },
-  searchWrapper: {
-      backgroundColor: Colors.white,
-      borderRadius: 16,
-      ...Colors.shadow,
-      borderColor: '#FFCDD2',
-      borderWidth: 1,
-      paddingVertical: 2,
-      marginBottom: 10,
   },
   listContainer: {
       paddingHorizontal: 20,

@@ -5,11 +5,11 @@
     "scheme": "meong-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/kucing.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/kucing.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,16 +18,30 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/kucing.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.naufal_rbbni.meongmobile"
+      
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
-    ]
+        "expo-router",
+        [
+          "expo-camera",
+          {
+            "cameraPermission": "Izinkan Meong Mobile mengakses kamera untuk mengambil foto cerita."
+          }
+        ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "75ecd5c8-c54c-4f7f-9123-1b2cc529c768"
+      }
+    }
   }
 }
