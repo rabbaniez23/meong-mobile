@@ -263,7 +263,7 @@ export default function KomunitasScreen() {
     <View style={styles.container}>
         <CustomHeader 
             title="Komunitas" 
-            leftIcon="chatbubbles-outline"
+            leftIcon="chatbubble-ellipses-outline"
             onLeftPress={() => router.push('/chat-list')}
             rightIcon="notifications-outline"
             onRightPress={() => router.push('/notifications')}

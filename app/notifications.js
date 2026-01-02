@@ -15,26 +15,7 @@ const NOTIFICATIONS = [
         time: 'Baru saja',
         read: false,
         image: require('../assets/Hatto.jpeg'),
-    },
-    {
-        id: '2',
-        type: 'COMMUNITY', // Community Post
-        user: { name: 'Drh. Anisa', avatar: null },
-        title: 'Tips Kesehatan Mingguan',
-        message: 'Drh. Anisa memposting tentang bahaya kutu pada musim hujan.',
-        time: '30m',
-        read: false,
-        image: null,
-    },
-    {
-        id: '3',
-        type: 'LOST', // Lost Cat
-        user: { name: 'Budi Santoso', avatar: null },
-        title: 'Laporan Hilang Baru',
-        message: 'Dicari: "Simba" hilang di area Setiabudi. Ada imbalan!',
-        time: '2j',
-        read: true,
-        image: require('../assets/Oyen.jpeg'),
+        action: '/(tabs)/adopsi' 
     },
     {
         id: '4',
@@ -45,26 +26,42 @@ const NOTIFICATIONS = [
         time: '1h',
         read: true,
         image: require('../assets/Miko.jpeg'),
+        action: '/chat-room?userName=MeongShelter&context=Adopsi%20Miko&initialMessage=Terima%20kasih%20telah%20menyetujui!'
     },
     {
-        id: '5',
-        type: 'DONATION', // Donation Goal
-        user: { name: 'Rumah Kucing Bgd', avatar: null },
-        title: 'Target Terpenuhi!',
-        message: 'Donasi untuk "Renovasi Atap" telah mencapai target. Terima kasih!',
-        time: '1d',
+        id: '3',
+        type: 'LOST', // Lost Cat
+        user: { name: 'Budi Santoso', avatar: null },
+        title: 'Seseorang Melapor!',
+        message: 'Asep melaporkan melihat kucing hilangmu "Mochi". Lihat detailnya.',
+        time: '2j',
         read: true,
-        image: require('../assets/shelter1.jpg'),
-    }
+        image: require('../assets/Putih.jpeg'),
+        action: '/(tabs)/profil' // Direct to profiling requests/reports tab
+    },
 ];
 
 export default function NotificationsScreen() {
     const router = useRouter();
     const [notifs, setNotifs] = useState(NOTIFICATIONS);
 
-    const markAsRead = (id) => {
+    const markAsRead = (id, action) => {
         setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-        // Navigation logic could go here depending on type
+        if (action) {
+            // Check if action is a chat link with params or simple path
+            if (action.includes('?')) {
+                // primitive parsing for demo
+                const [pathname, queryString] = action.split('?');
+                const params = {};
+                queryString.split('&').forEach(part => {
+                    const [key, val] = part.split('=');
+                    params[key] = decodeURIComponent(val);
+                });
+                router.push({ pathname, params });
+            } else {
+                router.push(action);
+            }
+        }
     };
 
     const getIcon = (type) => {
@@ -107,7 +104,7 @@ export default function NotificationsScreen() {
                     <TouchableOpacity 
                         key={item.id} 
                         style={[styles.item, !item.read && styles.unreadItem]}
-                        onPress={() => markAsRead(item.id)}
+                        onPress={() => markAsRead(item.id, item.action)}
                         activeOpacity={0.7}
                     >
                         {/* Avatar / Icon */}
@@ -136,13 +133,12 @@ export default function NotificationsScreen() {
                             </Text>
                         </View>
 
-                        {/* Unread Dot (Blue) like Instagram */}
+                        {/* Unread Dot */}
                         {!item.read && <View style={styles.blueDot} />}
                     </TouchableOpacity>
                 ))}
 
                 <Text style={[styles.sectionHeader, { marginTop: 20 }]}>Minggu Lalu</Text>
-                {/* Dummy for older */}
                 <View style={styles.emptyState}>
                     <Text style={styles.emptyText}>Tidak ada notifikasi lama.</Text>
                 </View>
@@ -244,12 +240,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#2196F3',
         marginLeft: 10,
     },
-    emptyState: {
-        alignItems: 'center',
-        padding: 20,
-    },
-    emptyText: {
-        color: '#999',
-        fontStyle: 'italic',
-    },
+    emptyState: { alignItems: 'center', padding: 20 },
+    emptyText: { color: '#999', fontStyle: 'italic' },
 });

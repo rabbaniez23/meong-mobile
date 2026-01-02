@@ -1,21 +1,33 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Colors } from '../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CustomHeader({ 
   title, 
-  leftIcon = "arrow-back", 
+  showBackBtn, // New prop
   onLeftPress, 
   rightIcon, 
   onRightPress,
   subtitle,
-  centerContent // Optional component to render in center (like Custom Image/Text combo)
+  centerContent,
+  showBadge // New prop for Red Dot
 }) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(-50)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  // Handle Back Press Default
+  const handleLeftPress = () => {
+      if (onLeftPress) {
+          onLeftPress();
+      } else if (showBackBtn && router.canGoBack()) {
+          router.back();
+      }
+  };
 
   useEffect(() => {
     Animated.parallel([
@@ -23,7 +35,7 @@ export default function CustomHeader({
         toValue: 0,
         duration: 400,
         useNativeDriver: true,
-        delay: 100, // Slight delay for smoother feel
+        delay: 100,
       }),
       Animated.timing(opacityAnim, {
         toValue: 1,
@@ -38,15 +50,20 @@ export default function CustomHeader({
     <Animated.View style={[
       styles.container, 
       { 
-        paddingTop: insets.top + (Platform.OS === 'ios' ? 10 : 20), // Adjusted padding
+        paddingTop: insets.top + (Platform.OS === 'ios' ? 10 : 20),
         opacity: opacityAnim,
         transform: [{ translateY: slideAnim }]
       }
     ]}>
       
       {/* Left Action */}
-      <TouchableOpacity onPress={onLeftPress} style={styles.iconBtn} activeOpacity={0.7}>
-        <Ionicons name={leftIcon} size={24} color={Colors.white} />
+      <TouchableOpacity 
+        onPress={handleLeftPress} 
+        style={[styles.iconBtn, !showBackBtn && !onLeftPress && { opacity: 0 }]} 
+        activeOpacity={0.7}
+        disabled={!showBackBtn && !onLeftPress}
+      >
+        <Ionicons name={showBackBtn ? "arrow-back" : "menu"} size={24} color={Colors.white} />
       </TouchableOpacity>
 
       {/* Center Content */}
@@ -60,8 +77,13 @@ export default function CustomHeader({
       </View>
 
       {/* Right Action */}
-      <TouchableOpacity onPress={onRightPress} style={styles.iconBtn} activeOpacity={0.7} disabled={!rightIcon}>
-        {rightIcon && <Ionicons name={rightIcon} size={24} color={Colors.white} />}
+      <TouchableOpacity onPress={onRightPress} style={[styles.iconBtn, !rightIcon && { opacity: 0 }]} activeOpacity={0.7} disabled={!rightIcon}>
+        {rightIcon && (
+            <View>
+                <Ionicons name={rightIcon} size={24} color={Colors.white} />
+                {showBadge && <View style={styles.redDot} />}
+            </View>
+        )}
       </TouchableOpacity>
 
     </Animated.View>
@@ -78,12 +100,8 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
-    // Elegant Shadow
-    shadowColor: "#2F5C2F", // Darker green shadow
-    shadowOffset: {
-      width: 0,
-      height: 8,
-    },
+    shadowColor: "#2F5C2F", 
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 10,
@@ -111,6 +129,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)', // Glassmorphic touch
+    backgroundColor: 'rgba(255,255,255,0.15)',
+  },
+  redDot: {
+      position: 'absolute',
+      top: -2,
+      right: -2,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: Colors.error,
+      borderWidth: 1.5,
+      borderColor: Colors.primary,
   }
 });

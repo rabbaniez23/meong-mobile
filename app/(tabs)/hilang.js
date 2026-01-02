@@ -98,7 +98,7 @@ export default function HilangScreen() {
     <View style={styles.container}>
         <CustomHeader 
             title="Lapor Hilang" 
-            leftIcon="chatbubbles-outline"
+            leftIcon="chatbubble-ellipses-outline"
             onLeftPress={() => router.push('/chat-list')}
             rightIcon="notifications-outline"
             onRightPress={() => router.push('/notifications')}

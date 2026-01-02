@@ -112,7 +112,7 @@ export default function DonasiScreen() {
     <View style={styles.container}>
         <CustomHeader 
             title="Donasi" 
-            leftIcon="chatbubbles-outline"
+            leftIcon="chatbubble-ellipses-outline"
             onLeftPress={() => router.push('/chat-list')}
             rightIcon="notifications-outline"
             onRightPress={() => router.push('/notifications')}

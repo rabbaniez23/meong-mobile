@@ -46,6 +46,7 @@ const INITIAL_ADOPTION_HISTORY = [
 const INITIAL_REPORTS = [ // (Lost Cats)
     { id: '1', name: 'Mochi', lastSeen: 'Kemarin Sore', location: 'Jl. Dago', image: require('../../assets/Putih.jpeg'), status: 'Dicari', distance: '0.5' },
     { id: '2', name: 'Tom', lastSeen: '1 Minggu lalu', location: 'Gasibu', image: require('../../assets/Abu.jpeg'), status: 'Ditemukan', distance: '2.0' },
+    { id: '3', name: 'Luna', lastSeen: '2 Hari lalu', location: 'Cihampelas', image: require('../../assets/Hatto.jpeg'), status: 'Dicari', distance: '1.2' }, 
 ];
 
 const INITIAL_ADOPTION_POSTS = [ // NEW (My Adoption Listings)
